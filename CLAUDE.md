@@ -51,6 +51,7 @@ YYYY-MM-記事スラッグ.md
 - `/japanese-natural-writing` — 日本語テックブログのAI文体を検出・除去し、自然な人間らしい日本語に書き直す
 - `/blog-hit-strategy` — 過去記事の実績データをもとにQiita向け戦略を提示（タイトル設計・トピック選定・構成パターン）
 - `/technical-blog-writing` — 開発者向け技術記事の構成・コード例・慣習のガイダンス
+- `/blog-originality` — 要約・翻訳で終わらないオリジナリティを加える（手を動かした記録・自分の疑問・トレンドとの接続）
 
 ## パーミッション
 
@@ -59,7 +60,10 @@ YYYY-MM-記事スラッグ.md
 ## 執筆フロー
 
 1. `npx qiita new YYYY-MM-スラッグ` で記事ファイルを作成
-2. `npx qiita preview` でプレビュー確認しながら執筆
-3. 公開前に `/japanese-natural-writing` でAI文体を除去
-4. `ignorePublish: false` に変更して `npx qiita publish` で投稿
-5. `git add` → `git commit` → `git push` でGit管理
+2. `/blog-hit-strategy` でタイトル・構成方針を決める
+3. `/technical-blog-writing` のガイドラインに従って本文を執筆
+4. `/blog-originality` で手を動かした記録・疑問・トレンド接続を追加
+5. `npx qiita preview` でプレビュー確認
+6. `/japanese-natural-writing` でAI文体を除去
+7. `ignorePublish: false` に変更して `npx qiita publish` で投稿
+8. `git add` → `git commit` → `git push` でGit管理
