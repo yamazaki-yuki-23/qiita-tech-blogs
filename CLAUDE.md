@@ -1,26 +1,65 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+このファイルはClaude Code（claude.ai/code）がこのリポジトリで作業する際のガイダンスを提供します。
 
-## Purpose
+## 目的
 
-This is a tech blog writing workspace for publishing articles to Qiita and Zenn. There is no build system or test suite — the primary outputs are Markdown article files.
+Qiitaへの技術ブログ記事を管理・執筆するワークスペース。ビルドシステムやテストスイートはなく、主な成果物はMarkdown記事ファイルです。
 
-## Available Skills
+## ディレクトリ構成
 
-These skills are pre-configured for this workflow:
+```
+qiita-tech-blogs/
+├── public/                  # qiita-cli管理フォルダ（記事本体）
+│   └── YYYY-MM-slug.md      # 1記事 = 1ファイル
+├── assets/                  # 記事で使用する画像
+│   └── YYYY-MM-slug/        # 記事ごとにサブフォルダ
+├── _meta/
+│   └── topics.md            # ネタ帳
+├── .github/workflows/
+│   └── publish.yml          # mainブランチpush時に自動publish
+└── qiita.config.json        # qiita-cli設定
+```
 
-- `/japanese-natural-writing` — Detects and removes AI-like writing patterns from Japanese tech blog drafts, rewriting them in natural human Japanese.
-- `/blog-hit-strategy` — Generates Qiita/Zenn publishing strategy based on past article performance data (topic selection, title design, structure patterns).
-- `/technical-blog-writing` — Guidance on structure, code examples, and conventions for technical blog posts aimed at developer audiences.
+## ファイル命名規則
 
-## Permissions
+`public/` 内の記事ファイルは以下の形式で命名する：
 
-`WebFetch` is pre-authorized for `qiita.com` and `zenn.dev` — use it to research existing articles, check trending topics, or verify published content.
+```
+YYYY-MM-記事スラッグ.md
+例: 2026-04-claude-code-tips.md
+```
 
-## Workflow Notes
+## 下書きと公開の管理
 
-- Articles are written in Markdown.
-- Qiita uses its own extended Markdown syntax (e.g., `::: message` blocks, code fence language tags for syntax highlighting).
-- Zenn uses similar Markdown with its own frontmatter conventions (`title`, `emoji`, `type`, `topics`, `published`).
-- When drafting articles, run `/japanese-natural-writing` on the final draft to remove AI-like phrasing before publishing.
+フォルダ分けではなくフロントマターで管理する：
+
+- `ignorePublish: true` → 下書き（publishコマンドを実行しても投稿されない）
+- `ignorePublish: false` → 公開対象
+
+## CLIコマンド
+
+| コマンド | 内容 |
+|---|---|
+| `npx qiita new YYYY-MM-スラッグ` | 記事ファイルを新規作成 |
+| `npx qiita preview` | ローカルプレビュー起動（localhost:8888） |
+| `npx qiita publish YYYY-MM-スラッグ` | Qiitaに投稿・更新 |
+| `npx qiita pull` | Qiita上の編集をローカルに同期 |
+
+## 利用可能なスキル
+
+- `/japanese-natural-writing` — 日本語テックブログのAI文体を検出・除去し、自然な人間らしい日本語に書き直す
+- `/blog-hit-strategy` — 過去記事の実績データをもとにQiita向け戦略を提示（タイトル設計・トピック選定・構成パターン）
+- `/technical-blog-writing` — 開発者向け技術記事の構成・コード例・慣習のガイダンス
+
+## パーミッション
+
+`WebFetch` は `qiita.com` に事前認可済み。既存記事のリサーチやトレンド確認に使用可能。
+
+## 執筆フロー
+
+1. `npx qiita new YYYY-MM-スラッグ` で記事ファイルを作成
+2. `npx qiita preview` でプレビュー確認しながら執筆
+3. 公開前に `/japanese-natural-writing` でAI文体を除去
+4. `ignorePublish: false` に変更して `npx qiita publish` で投稿
+5. `git add` → `git commit` → `git push` でGit管理
