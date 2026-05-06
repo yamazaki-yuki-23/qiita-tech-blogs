@@ -332,6 +332,16 @@ Web UIでも、Issue上にagentのコメント、status変更、完了ログが�
 
 ![MulticaのIssue詳細とagentコメント](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-05-multica-ai-agent-platform/issue-detail.png)
 
+### 補足: taskの完了とIssueの完了は別
+
+ここで少し混乱しやすいのは、agentの`task`とIssueの状態が別物だという点です。
+
+Multicaでは、Backlog以外のIssueをagentにassignすると、裏側でagent実行用の`task`が作られます。daemonがそのtaskを拾い、AI coding toolに渡し、実行が終わるとtaskは`completed`または`failed`になります。
+
+今回の検証でも、実行履歴上のtaskは`completed`になりました。一方で、Issue自体のstatusは`in_review`でした。
+
+つまり、今回確認できた流れは「agentが作業を終えてレビュー待ちにした」ところまでです。実際の開発タスクでは、その後に人間が結果を確認し、問題なければIssueをDoneに移す、という流れになります。
+
 これで、次の流れを確認できました。
 
 1. agentを作る
@@ -339,7 +349,8 @@ Web UIでも、Issue上にagentのコメント、status変更、完了ログが�
 3. Issueをagentにassignする
 4. `todo`にする
 5. local runtimeでagentが動く
-6. 実行履歴とコメントがMulticaに残る
+6. taskが`completed`になり、Issueが`in_review`になる
+7. 実行履歴とコメントがMulticaに残る
 
 ## 試してわかったこと
 
@@ -398,5 +409,7 @@ AIエージェントを複数使い始めると、「どのagentに何を頼ん�
 - https://multica.ai/
 - https://multica.ai/docs
 - https://multica.ai/docs/daemon-runtimes
+- https://multica.ai/docs/assigning-issues
+- https://multica.ai/docs/tasks
 - https://github.com/multica-ai/multica
 - https://multica.ai/changelog
