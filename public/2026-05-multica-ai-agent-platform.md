@@ -1,0 +1,396 @@
+---
+title: AIエージェントをチームメンバーのように扱える「Multica」を試してみた
+tags:
+  - AI
+  - 生成AI
+  - ClaudeCode
+  - Codex
+  - エージェント
+private: false
+updated_at: ''
+id: null
+organization_url_name: null
+slide: false
+ignorePublish: true
+---
+
+**TL;DR**: Multicaは、Claude CodeやCodexのようなAI coding agentを「Issueの担当者」として扱えるオープンソースのエージェント管理プラットフォームです。ローカルdaemonを起動すると、手元のAI coding toolがruntimeとして登録されます。今回はCLIを入れて、Codex runtimeのagentを作り、Issueをassignしてコメントが返るところまで試しました。
+
+Claude CodeやCodexを使っていると、「この作業をあとでやっておいて」と頼みたい場面があります。ただ、CLIを直接起動するだけだと、タスクの担当、状態、実行履歴、コメントの置き場所は別で管理する必要があります。
+
+Multicaは、その管理レイヤーをIssueベースで用意するツールです。この記事では、Multicaをローカル環境で試した記録をまとめます。
+
+検証時点の情報です。
+
+- 検証日: 2026年5月6日
+- OS: macOS
+- Multica CLI: `0.2.25`
+- 試したruntime: Codex
+
+## Multicaとは
+
+Multicaは、人間とAIエージェントが同じworkspaceでタスクを扱うためのプラットフォームです。
+
+公式サイトでは、Multicaを「coding agentsをreal teammatesにするopen-source platform」と説明しています。
+
+https://multica.ai/
+
+GitHubリポジトリでも、次のように紹介されています。
+
+https://github.com/multica-ai/multica
+
+> The open-source managed agents platform.
+
+特徴は、AIエージェントを単発のチャットやCLI実行で終わらせず、Issueの担当者として扱うところです。
+
+たとえば、通常のタスク管理ツールならIssueのassigneeには人間を設定します。Multicaでは、そこにClaude CodeやCodexなどをもとにしたagentを設定できます。
+
+公式ドキュメントでも、Issueをagentにassignすると、そのagentが作業し、進捗を報告し、コメントに返信すると説明されています。
+
+https://multica.ai/docs
+
+Issue一覧では、人間向けのタスクと同じようにagent向けのタスクも並びます。
+
+![MulticaのIssue board](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-05-multica-ai-agent-platform/issues-board.png)
+
+## 何がうれしいのか
+
+Claude CodeやCodexを直接使う場合、基本的には「今この場で依頼して、結果を見る」という使い方になりがちです。
+
+一方で、実際の開発タスクはもう少し長いライフサイクルを持っています。
+
+- タスクを作る
+- 担当者を決める
+- 着手状態にする
+- 作業ログを見る
+- レビュー待ちにする
+- コメントで追加指示する
+
+Multicaは、この部分をAIエージェント向けに用意しているツールです。
+
+特に面白いのは、agentの実行場所です。ドキュメントによると、agentのタスクはMulticaのサーバー上ではなく、ローカルdaemon、つまり自分のマシン上で動きます。
+
+https://multica.ai/docs
+
+手元のCLI、APIキー、コードディレクトリを使いながら、タスク管理をMultica側に寄せる設計です。
+
+## インストール
+
+今回はHomebrewでCLIを入れました。
+
+```sh
+brew install multica-ai/tap/multica
+```
+
+インストールされたバージョンは次の通りです。
+
+```sh
+$ multica --version
+multica 0.2.25 (commit: daf0e935, built: 2026-05-04T13:47:37Z)
+go: go1.26.1, os/arch: darwin/arm64
+```
+
+CLIのhelpを見ると、`agent`、`issue`、`project`、`runtime`、`daemon`などのコマンドが用意されています。
+
+```sh
+$ multica --help
+
+CORE COMMANDS
+  agent:      Work with agents
+  autopilot:  Manage autopilots (scheduled/triggered agent automations)
+  issue:      Work with issues
+  label:      Work with issue labels
+  project:    Work with projects
+  repo:       Work with repositories
+  skill:      Work with skills
+  workspace:  Work with workspaces
+
+RUNTIME COMMANDS
+  daemon:   Control the local agent runtime daemon
+  runtime:  Work with agent runtimes
+```
+
+この時点ではdaemonはまだ止まっていました。
+
+```sh
+$ multica daemon status
+Daemon: stopped
+```
+
+## `multica setup`でログインとdaemon起動を行う
+
+次に`multica setup`を実行します。
+
+```sh
+multica setup
+```
+
+実行すると、Multica Cloud用の設定が作られ、ブラウザでログインする流れになります。
+
+```sh
+Configured for Multica Cloud (https://multica.ai).
+  server_url: https://api.multica.ai
+  app_url:    https://multica.ai
+  config:     /Users/xxx/.multica/config.json
+
+Opening browser to authenticate...
+Waiting for authentication...
+```
+
+ブラウザで認証を完了すると、workspaceが検出され、daemonが起動しました。
+
+```sh
+Authenticated as ...
+Token saved to config.
+
+Found 1 workspace(s):
+  • demo_xxx (...)
+
+→ Run 'multica daemon start' to start your local agent runtime.
+
+Starting daemon...
+Daemon started (pid ..., version 0.2.25)
+Logs: /Users/xxx/.multica/daemon.log
+
+✓ Setup complete! Your machine is now connected to Multica.
+```
+
+daemonの状態も確認できます。
+
+```sh
+$ multica daemon status
+Daemon:      running (pid ..., uptime 37s)
+Agents:      claude, codex, gemini, copilot
+Workspaces:  1
+```
+
+setup後は、Web UIのRuntimes画面でもローカルruntimeがonlineになっていることを確認できます。
+
+![MulticaのRuntimes画面](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-05-multica-ai-agent-platform/runtimes.png)
+
+## runtimeが自動検出される
+
+`multica runtime list`を実行すると、ローカルで使えるAI coding toolがruntimeとして登録されていました。
+
+```sh
+multica runtime list --output json
+```
+
+今回の環境では、次の4つがonlineになりました。
+
+| provider | name | runtime_mode | status |
+|---|---|---|---|
+| claude | Claude | local | online |
+| codex | Codex | local | online |
+| gemini | Gemini | local | online |
+| copilot | Copilot | local | online |
+
+daemonのログにも、各runtimeが登録されたことが残っていました。
+
+```text
+registered runtime ... provider=claude
+registered runtime ... provider=codex
+registered runtime ... provider=gemini
+registered runtime ... provider=copilot
+watching workspace ... runtimes=4
+task wakeup websocket connected ... runtimes=4
+```
+
+ここで重要なのは、Multicaがエージェント実行用のクラウド環境を勝手に使うわけではないことです。
+
+ローカルdaemonが手元のCLIを検出し、それをruntimeとしてMultica workspaceに接続します。公式ドキュメントにも、APIキー、toolchain、コードディレクトリは自分のマシンに残ると説明されています。
+
+https://multica.ai/docs/daemon-runtimes
+
+## agentを作成する
+
+次に、Codex runtimeを使うagentを作りました。
+
+まず、agent作成に必要なオプションを確認します。
+
+```sh
+$ multica agent create --help
+
+Create a new agent
+
+FLAGS
+      --description string
+      --instructions string
+      --max-concurrent-tasks int32
+      --model string
+      --name string
+      --runtime-id string
+      --visibility string
+```
+
+今回は記事用の検証なので、ファイル変更をしないようにinstructionsを明示しました。
+
+```sh
+multica agent create \
+  --name "Qiita Test Codex" \
+  --description "Qiita記事用にMulticaの動作確認をするCodex agent" \
+  --instructions "You are a test coding agent for a Qiita article. Keep responses concise, do not modify repositories unless explicitly asked, and report what you are doing in Japanese." \
+  --runtime-id <codex-runtime-id> \
+  --visibility private \
+  --output json
+```
+
+作成結果です。
+
+```json
+{
+  "description": "Qiita記事用にMulticaの動作確認をするCodex agent",
+  "name": "Qiita Test Codex",
+  "runtime_mode": "local",
+  "status": "idle",
+  "visibility": "private"
+}
+```
+
+ここで作ったagentは、Multica上のassigneeとして使えるようになります。
+
+作成したagentの詳細画面です。runtimeにCodexが紐づき、Instructionsを画面上で確認・編集できます。
+
+![Multicaのagent詳細画面](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-05-multica-ai-agent-platform/agent-detail.png)
+
+## Issueをagentにassignしてみる
+
+次に、検証用のIssueを作成して、先ほどのagentにassignします。
+
+```sh
+multica issue create \
+  --title "Qiita記事用: Multicaの動作確認" \
+  --description "この記事用の検証タスクです。リポジトリやファイルは変更せず、Multica上でこのIssueを受け取ったことと、実行環境として認識していることを日本語で短くコメントしてください。" \
+  --assignee "Qiita Test Codex" \
+  --status todo \
+  --priority low \
+  --output json
+```
+
+作成されたIssueでは、assigneeが`agent`になっていました。
+
+```json
+{
+  "assignee_type": "agent",
+  "identifier": "DEM-10",
+  "priority": "low",
+  "status": "todo",
+  "title": "Qiita記事用: Multicaの動作確認"
+}
+```
+
+Issueを作成した直後、daemonログにはtask wakeupが記録されました。
+
+```text
+task wakeup received ... runtime_id=... task_id=...
+```
+
+その後、Issueの状態を確認します。
+
+```sh
+multica issue get DEM-10
+```
+
+結果を見ると、statusが`in_review`に変わっていました。
+
+```json
+{
+  "identifier": "DEM-10",
+  "assignee_type": "agent",
+  "status": "in_review",
+  "title": "Qiita記事用: Multicaの動作確認"
+}
+```
+
+実行履歴も確認できます。
+
+```sh
+$ multica issue runs DEM-10
+
+ID        AGENT     STATUS     STARTED           COMPLETED         ERROR
+52f9f90d  d20752ff  completed  2026-05-06T02:33  2026-05-06T02:34
+```
+
+コメント一覧を見ると、agentからコメントが投稿されていました。
+
+```sh
+$ multica issue comment list DEM-10
+```
+
+```text
+AUTHOR          TYPE     CONTENT
+agent:d20752ff  comment  このIssueを受け取りました。Qiita Test Codexとして、Multicaのローカル実行環境上で動作していることを確認しています。
+```
+
+Web UIでも、Issue上にagentのコメント、status変更、完了ログが残っていました。
+
+![MulticaのIssue詳細とagentコメント](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-05-multica-ai-agent-platform/issue-detail.png)
+
+これで、次の流れを確認できました。
+
+1. agentを作る
+2. Issueを作る
+3. Issueをagentにassignする
+4. `todo`にする
+5. local runtimeでagentが動く
+6. 実行履歴とコメントがMulticaに残る
+
+## 試してわかったこと
+
+試して一番大きく感じたのは、AIエージェントを「作業を依頼する相手」として扱える点です。
+
+Claude CodeやCodexを直接起動する場合、こちらがターミナル上で会話を管理します。どのタスクを依頼したか、どこまで進んだか、レビュー待ちなのか、失敗したのかは、使う側が別途管理する必要があります。
+
+Multicaでは、その管理対象がIssueになります。
+
+Issueにagentをassignすると、daemon経由でruntimeに通知され、agentが作業し、結果がコメントとして残ります。実行履歴もIssueに紐づくので、「このタスクに対してagentが何をしたか」を後から追いやすいです。
+
+ローカルdaemon方式なのも現実的だと感じました。
+
+既にClaude CodeやCodexの認証を済ませているマシンなら、その環境をそのままruntimeとして使えます。今回も`multica setup`後に、ローカルのClaude、Codex、Gemini、Copilotが検出されました。
+
+## 注意点
+
+まず、agentを動かすにはdaemonが起動している必要があります。
+
+```sh
+multica daemon status
+```
+
+で状態を確認できます。
+
+次に、新しいIssueがBacklogのままだとagentが動かない点に注意が必要です。Multicaの初期Issueにも、agentを動かすにはStatusを`Todo`にする必要があると書かれていました。
+
+今回もIssue作成時に`--status todo`を指定しました。
+
+```sh
+multica issue create ... --status todo
+```
+
+また、agentの実行には元になるAI coding tool側の認証も必要です。たとえばCodex runtimeを使うなら、ローカルのCodex CLIが使える状態になっている必要があります。
+
+最後に、agentに渡すinstructionsは慎重に書いたほうがよいです。
+
+今回の検証では、記事用の確認だけをしたかったので、次のように明示しました。
+
+```text
+do not modify repositories unless explicitly asked
+```
+
+実際の開発タスクで使う場合も、どのリポジトリを触ってよいか、どこまで自律的に変更してよいか、レビュー前に何を確認すべきかをinstructionsやworkspace contextに書いておくとよさそうです。
+
+## まとめ
+
+Multicaは、AI coding agentを単なるCLIツールではなく、Issueを担当するチームメンバーのように扱うためのプラットフォームでした。
+
+今回試した範囲では、HomebrewでCLIを入れ、`multica setup`でdaemonを起動し、Codex runtimeのagentを作成し、Issueをassignしてagentコメントが返るところまで確認できました。
+
+AIエージェントを複数使い始めると、「どのagentに何を頼んだか」「どこまで進んだか」「失敗したのかレビュー待ちなのか」を管理する必要が出てきます。Multicaは、その管理レイヤーをIssueベースで提供する選択肢として面白いと感じました。
+
+## 参考
+
+- https://multica.ai/
+- https://multica.ai/docs
+- https://multica.ai/docs/daemon-runtimes
+- https://github.com/multica-ai/multica
+- https://multica.ai/changelog
