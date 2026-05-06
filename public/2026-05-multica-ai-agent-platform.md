@@ -334,13 +334,11 @@ Web UIでも、Issue上にagentのコメント、status変更、完了ログが�
 
 ### 補足: taskの完了とIssueの完了は別
 
-ここで少し混乱しやすいのは、agentの`task`とIssueの状態が別物だという点です。
+Multicaでは、Issueをagentにassignすると、裏側でagent実行用の`task`が作られます。daemonがそのtaskを拾い、AI coding toolに渡し、実行が終わるとtaskは`completed`または`failed`になります。
 
-Multicaでは、Backlog以外のIssueをagentにassignすると、裏側でagent実行用の`task`が作られます。daemonがそのtaskを拾い、AI coding toolに渡し、実行が終わるとtaskは`completed`または`failed`になります。
+今回の検証ではtaskは`completed`になりましたが、Issue自体のstatusは`in_review`でした。つまり、agentが作業を終えてレビュー待ちにした状態です。
 
-今回の検証でも、実行履歴上のtaskは`completed`になりました。一方で、Issue自体のstatusは`in_review`でした。
-
-つまり、今回確認できた流れは「agentが作業を終えてレビュー待ちにした」ところまでです。実際の開発タスクでは、その後に人間が結果を確認し、問題なければIssueをDoneに移す、という流れになります。
+実際の開発タスクでは、その後に人間が結果を確認し、問題なければIssueをDoneへ移す流れになります。
 
 これで、次の流れを確認できました。
 
