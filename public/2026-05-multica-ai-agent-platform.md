@@ -14,7 +14,11 @@ slide: false
 ignorePublish: true
 ---
 
-**TL;DR**: Multicaは、Claude CodeやCodexのようなAI coding agentをIssueの担当者として扱えるオープンソースのエージェント管理プラットフォームです。今回はCodex runtimeのagentを作り、Issueをassignしてコメントが返るところまで試しました。
+**TL;DR**
+
+- Multicaは、AI coding agentをIssueの担当者として扱えるOSS
+- ローカルdaemon経由で、手元のClaude CodeやCodexなどをruntimeとして使える
+- 今回はCodex runtimeのagentを作り、Issue assignからコメント投稿まで確認した
 
 Claude CodeやCodexを使っていると、「この作業をあとでやっておいて」と頼みたい場面があります。ただ、CLIを直接起動するだけだと、タスクの担当、状態、実行履歴、コメントの置き場所は別で管理する必要があります。
 
