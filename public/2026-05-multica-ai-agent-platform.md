@@ -33,13 +33,11 @@ Multicaは、その管理レイヤーをIssueベースで用意するツール�
 
 ## Multicaとは
 
-Multicaは、人間とAIエージェントが同じworkspaceでタスクを扱うためのプラットフォームです。
-
-公式サイトでは、Multicaを「coding agentsをreal teammatesにするopen-source platform」と説明しています。
+Multicaは、人間とAIエージェントが同じworkspaceでタスクを扱うためのプラットフォームです。公式サイトでは「coding agentsをreal teammatesにするopen-source platform」と紹介されています。
 
 https://multica.ai/
 
-GitHubリポジトリでも、次のように紹介されています。
+GitHubリポジトリでも、次のように説明されています。
 
 https://github.com/multica-ai/multica
 
@@ -59,9 +57,9 @@ Issue一覧では、人間向けのタスクと同じようにagent向けのタ�
 
 ## 何がうれしいのか
 
-Claude CodeやCodexを直接使う場合、基本的には「今この場で依頼して、結果を見る」という使い方になりがちです。
+Claude CodeやCodexを直接使う場合、「今この場で依頼して、結果を見る」という使い方になりがちです。
 
-一方で、実際の開発タスクはもう少し長いライフサイクルを持っています。
+実際の開発タスクは、もう少し長いライフサイクルを持っています。
 
 - タスクを作る
 - 担当者を決める
@@ -70,9 +68,9 @@ Claude CodeやCodexを直接使う場合、基本的には「今この場で依�
 - レビュー待ちにする
 - コメントで追加指示する
 
-Multicaは、この部分をAIエージェント向けに用意しているツールです。
+Multicaは、このライフサイクル全体をAIエージェント込みで回せるようにしたツールです。
 
-特に面白いのは、agentの実行場所です。ドキュメントによると、agentのタスクはMulticaのサーバー上ではなく、ローカルdaemon、つまり自分のマシン上で動きます。
+個人的に一番重要だと感じたのは、agentの実行場所です。ドキュメントによると、agentのタスクはMulticaのサーバー上ではなく、ローカルdaemon、つまり自分のマシン上で動きます。
 
 https://multica.ai/docs
 
@@ -159,7 +157,7 @@ Logs: /Users/xxx/.multica/daemon.log
 ✓ Setup complete! Your machine is now connected to Multica.
 ```
 
-daemonの状態も確認できます。
+daemonの状態は、`multica daemon status`で確認できます。
 
 ```sh
 $ multica daemon status
@@ -168,7 +166,7 @@ Agents:      claude, codex, gemini, copilot
 Workspaces:  1
 ```
 
-setup後は、Web UIのRuntimes画面でもローカルruntimeがonlineになっていることを確認できます。
+setup後は、Web UIのRuntimes画面にもローカルruntimeがonlineで表示されました。
 
 ![MulticaのRuntimes画面](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-05-multica-ai-agent-platform/runtimes.png)
 
@@ -210,7 +208,7 @@ https://multica.ai/docs/daemon-runtimes
 
 ## agentを作成する
 
-次に、Codex runtimeを使うagentを作りました。
+Codex runtimeを使うagentを作りました。
 
 まず、agent作成に必要なオプションを確認します。
 
@@ -261,7 +259,7 @@ multica agent create \
 
 ## Issueをagentにassignしてみる
 
-次に、検証用のIssueを作成して、先ほどのagentにassignします。
+検証用のIssueを作成して、先ほどのagentにassignします。
 
 ```sh
 multica issue create \
@@ -328,6 +326,8 @@ AUTHOR          TYPE     CONTENT
 agent:d20752ff  comment  このIssueを受け取りました。Qiita Test Codexとして、Multicaのローカル実行環境上で動作していることを確認しています。
 ```
 
+CLIでIssueを作って1分ほどで返ってきました。Issueのコメント欄にagentの返信が普通に並んでいるのを見ると、確かに「チームメンバー」という感覚に近いです。
+
 Web UIでも、Issue上にagentのコメント、status変更、完了ログが残っていました。
 
 ![MulticaのIssue詳細とagentコメント](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-05-multica-ai-agent-platform/issue-detail.png)
@@ -354,53 +354,49 @@ Multicaでは、Issueをagentにassignすると、裏側でagent実行用の`tas
 
 試して一番大きく感じたのは、AIエージェントを「作業を依頼する相手」として扱える点です。
 
-Claude CodeやCodexを直接起動する場合、こちらがターミナル上で会話を管理します。どのタスクを依頼したか、どこまで進んだか、レビュー待ちなのか、失敗したのかは、使う側が別途管理する必要があります。
+Claude CodeやCodexを直接起動する場合、こちらがターミナル上で会話を管理します。どのタスクを依頼したか、どこまで進んだか、レビュー待ちなのか、失敗したのか——その状態管理は使う側の手元に残ります。
 
 Multicaでは、その管理対象がIssueになります。
 
 Issueにagentをassignすると、daemon経由でruntimeに通知され、agentが作業し、結果がコメントとして残ります。実行履歴もIssueに紐づくので、「このタスクに対してagentが何をしたか」を後から追いやすいです。
 
-ローカルdaemon方式なのも現実的だと感じました。
-
-既にClaude CodeやCodexの認証を済ませているマシンなら、その環境をそのままruntimeとして使えます。今回も`multica setup`後に、ローカルのClaude、Codex、Gemini、Copilotが検出されました。
+ローカルdaemon方式も現実的です。既にClaude CodeやCodexの認証を済ませているマシンなら、その環境をそのままruntimeとして使えます。今回も`multica setup`後に、ローカルのClaude、Codex、Gemini、Copilotが検出されました。
 
 ## 注意点
 
-まず、agentを動かすにはdaemonが起動している必要があります。
+agentを動かすにはdaemonが起動していることが前提です。
 
 ```sh
 multica daemon status
 ```
 
-で状態を確認できます。
+`running`になっていることを確認してから進めます。
 
-次に、新しいIssueがBacklogのままだとagentが動かない点に注意が必要です。Multicaの初期Issueにも、agentを動かすにはStatusを`Todo`にする必要があると書かれていました。
-
-今回もIssue作成時に`--status todo`を指定しました。
+IssueのStatusが`Backlog`のままだとagentは動きません。Multicaが最初に作るサンプルIssueにもその旨が書かれています。Issue作成時に`--status todo`を指定するか、Web UIでStatusをTodoに変更してから試してください。
 
 ```sh
 multica issue create ... --status todo
 ```
 
-また、agentの実行には元になるAI coding tool側の認証も必要です。たとえばCodex runtimeを使うなら、ローカルのCodex CLIが使える状態になっている必要があります。
+Codex runtimeを使う場合、ローカルのCodex CLIが認証済みになっていることも確認します。daemonは手元のtoolchainを検出するだけで、認証情報は持っていません。
 
-最後に、agentに渡すinstructionsは慎重に書いたほうがよいです。
-
-今回の検証では、記事用の確認だけをしたかったので、次のように明示しました。
+instructionsは慎重に書くのが無難です。今回の検証では、記事用の確認だけをしたかったので、次のように明示しました。
 
 ```text
 do not modify repositories unless explicitly asked
 ```
 
-実際の開発タスクで使う場合も、どのリポジトリを触ってよいか、どこまで自律的に変更してよいか、レビュー前に何を確認すべきかをinstructionsやworkspace contextに書いておくとよさそうです。
+実際の開発タスクで使う場合は、どのリポジトリを触ってよいか、どこまで自律的に変更してよいか、レビュー前に何を確認すべきかをinstructionsやworkspace contextに書いておくと安全です。
 
 ## まとめ
 
-Multicaは、AI coding agentを単なるCLIツールではなく、Issueを担当するチームメンバーのように扱うためのプラットフォームでした。
+MulticaはAI coding agentをCLIの単発実行で終わらせず、Issueを担当するチームメンバーとして扱うためのプラットフォームです。
 
 今回試した範囲では、HomebrewでCLIを入れ、`multica setup`でdaemonを起動し、Codex runtimeのagentを作成し、Issueをassignしてagentコメントが返るところまで確認できました。
 
-AIエージェントを複数使い始めると、「どのagentに何を頼んだか」「どこまで進んだか」「失敗したのかレビュー待ちなのか」を管理する必要が出てきます。Multicaは、その管理レイヤーをIssueベースで提供する選択肢として面白いと感じました。
+実際に使うなら、調査、軽微な修正、ドキュメント更新、再現手順の確認のように、Issueとして切り出しやすく、あとからレビューしやすい作業と相性がよさそうです。
+
+AIエージェントを複数使い始めると、「どのagentに何を頼んだか」「どこまで進んだか」「失敗したのかレビュー待ちなのか」を管理する手間がどこかに生まれます。その管理をIssueで一元化できるなら、ツールを増やしても混乱しにくい。個人開発でもチームでも使える構造です。
 
 ## 参考
 
