@@ -52,6 +52,7 @@ YYYY-MM-記事スラッグ.md
 - `/blog-hit-strategy` — 過去記事の実績データをもとにQiita向け戦略を提示（タイトル設計・トピック選定・構成パターン）
 - `/technical-blog-writing` — 開発者向け技術記事の構成・コード例・慣習のガイダンス
 - `/blog-originality` — 要約・翻訳で終わらないオリジナリティを加える（手を動かした記録・自分の疑問・トレンドとの接続）
+- `/qiita-tweet` — 記事を読んでX（Twitter）投稿文を1〜2文で生成し、Web Intentリンクで即投稿できる状態にする
 
 ## パーミッション
 
@@ -66,4 +67,5 @@ YYYY-MM-記事スラッグ.md
 5. `npx qiita preview` でプレビュー確認
 6. `/japanese-natural-writing` でAI文体を除去
 7. `ignorePublish: false` に変更して `npx qiita publish` で投稿
-8. `git add` → `git commit` → `git push` でGit管理
+8. `/qiita-tweet` でX投稿文を生成して投稿
+9. `git add` → `git commit` → `git push` でGit管理
