@@ -180,7 +180,9 @@ setup後は、Web UIのRuntimes画面でもローカルruntimeがonlineになっ
 multica runtime list --output json
 ```
 
-今回の環境では、次の4つがonlineになりました。
+Multica自体は、Claude Code、Codex、GitHub Copilot CLI、OpenClaw、OpenCode、Hermes、Gemini、Pi、Cursor Agent、Kimi、Kiro CLIなどに対応しています。
+
+今回のローカル環境では、そのうち次の4つがdaemonに検出され、onlineのruntimeとして登録されました。
 
 | provider | name | runtime_mode | status |
 |---|---|---|---|
