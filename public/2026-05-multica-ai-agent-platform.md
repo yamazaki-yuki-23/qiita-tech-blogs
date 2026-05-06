@@ -25,7 +25,7 @@ Multicaは、その管理レイヤーをIssueベースで用意するツール�
 - 検証日: 2026年5月6日
 - OS: macOS
 - Multica CLI: `0.2.25`
-- 試したruntime: Codex
+- agent実行に使ったruntime: Codex
 
 ## Multicaとは
 
