@@ -2,16 +2,16 @@
 title: AIエージェントをチームメンバーのように扱える「Multica」を試してみた
 tags:
   - AI
+  - codex
+  - エージェント
   - 生成AI
   - ClaudeCode
-  - Codex
-  - エージェント
 private: false
-updated_at: ''
-id: null
+updated_at: '2026-05-06T12:50:39+09:00'
+id: 6840aedbb9d754393ffb
 organization_url_name: null
 slide: false
-ignorePublish: true
+ignorePublish: false
 ---
 
 **TL;DR**
