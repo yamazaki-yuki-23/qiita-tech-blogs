@@ -7,11 +7,11 @@ tags:
   - temporal
   - web標準
 private: false
-updated_at: '2026-05-17T19:54:23+09:00'
-id: a65d1db11c3d17df1bed
+updated_at: ''
+id: null
 organization_url_name: null
 slide: false
-ignorePublish: false
+ignorePublish: true
 ---
 
 **TL;DR**
