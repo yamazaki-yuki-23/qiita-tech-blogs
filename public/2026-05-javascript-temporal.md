@@ -1,11 +1,11 @@
 ---
-title: Node.js v26 で標準で使えるようになった JavaScript Temporal — Date の何が問題で、Temporal が何を解決するのか
+title: Node.js v26 で標準化された JavaScript Temporal — Date の何が問題で、Temporal が何を解決するのか
 tags:
   - JavaScript
   - Node.js
   - Temporal
-  - ECMAScript
-  - TC39
+  - Date
+  - Web標準
 private: false
 updated_at: ''
 id: null
@@ -16,11 +16,39 @@ ignorePublish: true
 
 **TL;DR**
 
-- 2026-05-05 リリースの Node.js v26 で `Temporal` が標準で使えるようになった。Firefox 139（2025-05）・Chrome 144（2026-01）・Edge 144（2026-01）に続いて、Node.js も対応した
-- `Temporal` は役割ごとに型を分けたクラス群で、`Date` の設計上の問題を解消する
-- Safari は2026-05時点で未対応。フロントエンドでの全面採用にはポリフィルが必要
+- Node.js v26（2026-05-14）で `Temporal` が標準で使えるようになり、Firefox / Chrome / Edge とあわせて主要環境で揃った
+- `Temporal` は **用途別に型を分けた日時 API**。Date の構造的な問題（破壊的変更・役割の混在・タイムゾーン制限・暦法制限・パースの揺れ）を型レベルで解決する
+- Safari は2026-05時点で未対応。フロントエンドは `@js-temporal/polyfill` か `temporal-polyfill` を併用
 
-## Date が抱える5つの設計上の問題
+## Temporal とは
+
+`Temporal` は、JavaScript の `Date` を置き換えるために設計された新しい日時 API です。TC39 proposal として長く議論され、Stage 4 に到達。Node.js v26（2026-05-14リリース）でフラグなしで使えるようになりました。
+
+`Date` は1995年の登場以来、設計上の問題が知られていましたが互換性のために残り続けてきました。`Temporal` は **「ひとつの型ですべての日時を扱う」のをやめ、用途ごとに型を分ける** という発想で書き直された API です。
+
+### 各環境の対応状況
+
+- **Firefox 139**（2025-05）で先行
+- **Chrome 144 / Edge 144**（2026-04）でサポート
+- **Node.js v26**（2026-05-14）でフラグなしのデフォルト有効
+- **Safari**: 2026-05時点で未対応
+
+Safari 未対応のため、フロントエンドで利用するならポリフィルを併用するのが現実的です。`@js-temporal/polyfill` は Temporal 仕様の策定メンバーが管理する参照実装ベース（gzip 後 45kB 程度）、`temporal-polyfill` は FullCalendar の作者による軽量実装（gzip 後 20kB 程度）です。仕様追従の正確さを取るか、バンドルサイズの軽さを取るかで使い分けます。
+
+### 動作確認
+
+Node.js v26 で `Temporal` が使えることを最小コードで確認します。
+
+```js
+console.log(typeof Temporal);
+// "object"
+```
+
+`Temporal` は `Math` と同じく、関連する機能をまとめた名前空間オブジェクトです。`new Temporal()` のような直接インスタンス化はできず、すべての操作は `Temporal.Now` や `Temporal.Instant.from()` のように静的メソッド・サブクラス経由で行います。
+
+## Date の何が問題だったか
+
+[MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Temporal) を参考に、`Date` の設計上の問題として5つを挙げます。順番に実コードで確認します。
 
 ### 1. すべてのセッターがミュータブル
 
@@ -36,22 +64,28 @@ before: 2026-01-31T00:00:00.000Z
 after : 2026-03-03T00:00:00.000Z
 ```
 
-`setUTCMonth` は元のインスタンス `d` を書き換えます。さらに `1/31` の1ヶ月後は2月に該当日がないので `3/3` として扱われ、月末を1ヶ月進めたいだけの操作で2月をまたぎます。`const` で受けても安心できず、関数間で渡し回す際に意図しない書き換えが起きやすい設計です。
+`setUTCMonth` は元のインスタンス `d` を書き換えます。さらに `1/31` の1ヶ月後は2月に該当日がないため `3/3` として扱われ、月末を1ヶ月進めるだけの操作で2月をまたぎます。
 
-### 2. 同じ Date インスタンスから、UTC とローカルで違う時刻が返る
+`const` で受けても安心できません。インスタンスを関数間で渡し回すと、どこかで意図しない書き換えが起きやすい設計です。
+
+### 2. タイムスタンプと成分の2つの役割を1つの型に詰めている
 
 ```js
 const d = new Date("2026-05-17T10:00:00Z");
+console.log("valueOf()    :", d.valueOf());
 console.log("getUTCHours():", d.getUTCHours());
-console.log("getHours()   :", d.getHours());
+console.log("getUTCMonth():", d.getUTCMonth());
 ```
 
 ```console
+valueOf()    : 1779012000000
 getUTCHours(): 10
-getHours()   : 19
+getUTCMonth(): 4
 ```
 
-`Date` インスタンス1つに対して、UTC として読むメソッド（`getUTCHours()` 系）と、実行環境のローカル時刻として読むメソッド（`getHours()` 系）の両方が定義されていて、同じ値から違う数字が返ります。どちらが「真の値」なのかは型からは分からず、書き手が状況ごとに選び分ける必要があります。
+`Date` インスタンス1つに対し、**タイムスタンプとして読むメソッド**（`valueOf()` `getTime()` はエポックからのミリ秒を返す）と、**年月日時分秒の成分として読むメソッド**（`getUTCHours()` `getUTCMonth()` 系）が両方定義されています。
+
+同じ値が「単一の数値」とも「成分の組」とも読める設計で、コードからはどちらの意味で扱っているかが判別しづらく、誤用を招きやすい構造です。
 
 ### 3. タイムゾーンは UTC とローカルのみ
 
@@ -66,7 +100,9 @@ Asia/Tokyo で表示: 2026/5/17 19:00:00
 America/NY で表示: 5/17/2026, 6:00:00 AM
 ```
 
-`toLocaleString` の `timeZone` オプションで任意のタイムゾーンの「表示」は得られます。ただし `Date` インスタンス自身は「Tokyo の19時」として保持しているわけではありません。`getHours()` は常に実行環境のローカルタイムゾーンを参照するため、`Date` 単体で「Tokyo 時間で毎週月曜9:00」のような業務上の概念を表現する手段がありません。
+`toLocaleString` の `timeZone` オプションで任意のタイムゾーンの「表示」は得られますが、`Date` インスタンス自身は「Tokyo の19時」として保持していません。`getHours()` は常に実行環境のローカルタイムゾーンを参照します。
+
+「タイムゾーンに依存しない時刻」も表現できません。たとえば「毎朝8時のアラーム」のように特定のタイムゾーンに紐付けずに持っておきたい時刻も、`Date` で書くと作成した時点の実行環境のタイムゾーンを基準に解釈され、内部では UTC のタイムスタンプとして保存されてしまいます。後で別地域のユーザーや別のタイムゾーンで動くサーバーがその値を読み出すと、本来意図した「8時」とは違う時刻に解釈されます。
 
 ### 4. グレゴリオ暦以外を扱えない
 
@@ -89,7 +125,7 @@ getFullYear(): 2026
 和暦表示     : 令和8年1月1日
 ```
 
-`toLocaleDateString` を使えば和暦などの「表示」はできます。しかし `getFullYear()` などの数値を返すメソッドは常にグレゴリオ暦を返します。和暦・ヘブライ暦・イスラム暦・中国暦などを数値として取り出す標準APIは `Date` にありません。
+`toLocaleDateString` を使えば和暦などの「表示」はできます。しかし `getFullYear()` などの数値を返すメソッドは常にグレゴリオ暦を返します。和暦・ヘブライ暦・イスラム暦・中国暦などを **数値として** 取り出す標準 API は `Date` にありません。
 
 ### 5. 日時文字列の解釈が一貫しない
 
@@ -103,41 +139,278 @@ console.log(new Date("2026/01/01").toISOString());
 2025-12-31T15:00:00.000Z
 ```
 
-ISO 8601 形式（ハイフン区切りの `YYYY-MM-DD`）は **UTC の0時** として解釈されます。スラッシュ区切りの `YYYY/MM/DD` は **実行環境のローカル0時** として解釈されます。Tokyo (UTC+9) で実行すると、後者は UTC では前日15時となり、文字列が1字違うだけで日付が前後にずれます。形式間でルールが揃っていないだけでなく、ISO 8601 以外の形式の扱いは ECMA-262 仕様でも実装依存（implementation-defined）と定義されていて、エンジン間でも挙動が変わり得ます。
+ISO 8601 形式（ハイフン区切りの `YYYY-MM-DD`）は仕様で **UTC の0時** として解釈すると定められています。一方、スラッシュ区切りの `YYYY/MM/DD` は仕様の対象外で、V8 や SpiderMonkey などの実装が独自に **実行環境のローカル0時** として解釈します。
 
-## Node.js v26 でついに標準化された
+Tokyo (UTC+9) で実行すると、後者は UTC では前日15時。文字列が1字違うだけで日付が前後にずれます。仕様で決まっている部分と実装任せの部分が混在しているため、形式やランタイムが変わると解釈が変わってしまいます。
 
-Temporal は TC39 proposal として長く議論され、Stage 4 に到達しました。各環境の対応状況は次の通りです。
+## Temporal の基本思想：用途別に型を分ける
 
-- **Firefox 139**（2025-05）で先行
-- **Chrome 144**（2026-01）/ **Edge 144**（2026-01）でサポート
-- **Node.js v26**（2026-05-05）でフラグなしのデフォルト有効
-- **Safari**: 2026-05時点で未対応
+`Temporal` はこれらの問題を **型のレベル** で解決します。鍵になる発想は「ひとつの型ですべての日時を扱う」のをやめて、用途別に型を分けることです。
 
-Safari 未対応のため、フロントエンドで利用するならポリフィルを併用するのが現実的です。`@js-temporal/polyfill` は Temporal 仕様の策定メンバーが管理する参照実装ベースのポリフィル（gzip 後 45kB 程度）、`temporal-polyfill` は FullCalendar の作者による軽量実装（gzip 後 20kB 程度）です。仕様追従の正確さを取るか、バンドルサイズの軽さを取るかで使い分けることになります。
+| 概念 | クラス |
+|---|---|
+| UTC 基準の絶対時刻（瞬間） | `Temporal.Instant` |
+| タイムゾーン込みの実時刻 | `Temporal.ZonedDateTime` |
+| タイムゾーンなしの日時 | `Temporal.PlainDateTime` |
+| 日付だけ | `Temporal.PlainDate` |
+| 時刻だけ | `Temporal.PlainTime` |
+| 年月だけ | `Temporal.PlainYearMonth` |
+| 月日だけ | `Temporal.PlainMonthDay` |
+| 期間・差分 | `Temporal.Duration` |
+| 現在時刻の取得 | `Temporal.Now` |
 
-## Temporal の中核 — 5つのクラス
+すべての型は **イミュータブル** で、変更操作は新しいインスタンスを返します。任意のタイムゾーン、複数の暦法、ナノ秒精度に対応します。
 
-Node.js v26 で `Temporal` が使えることを最小コードで確認します。
+## 主要クラス
+
+### Temporal.Instant — UTC 基準の絶対時刻
+
+タイムゾーンも暦も持たない、UTC の瞬間を表すクラスです。エポックからのナノ秒数で定義されます。
 
 ```js
-console.log(typeof Temporal);
-// "object"
+const fromString = Temporal.Instant.from("2026-05-17T10:00:00Z");
+const fromMs = Temporal.Instant.fromEpochMilliseconds(1_779_012_000_000);
+const fromNs = Temporal.Instant.fromEpochNanoseconds(1_779_012_000_000_000_000n);
+console.log("from string :", fromString.toString());
+console.log("from ms     :", fromMs.toString());
+console.log("from ns     :", fromNs.toString());
 ```
 
-`Temporal` は `Math` と同じく、関連する機能をまとめた名前空間オブジェクトです。`new Temporal()` で直接インスタンスを作るオブジェクトではなく、`Temporal.Now` や `Temporal.Instant.from()` のように静的メソッド・サブクラス経由で使います。
+```console
+from string : 2026-05-17T10:00:00Z
+from ms     : 2026-05-17T10:00:00Z
+from ns     : 2026-05-17T10:00:00Z
+```
 
-MDN のリファレンスを見ると Temporal には10近いクラスが並んでいますが、実用上はまず次の5系統を押さえれば足ります。
+#### イミュータブル
 
-- `Temporal.Now` — 現在時刻を取得
-- `Temporal.Instant` — UTC 基準の「瞬間」
-- `Temporal.PlainDate` / `PlainTime` / `PlainDateTime` / `PlainYearMonth` / `PlainMonthDay` — タイムゾーンを持たない構成要素
-- `Temporal.ZonedDateTime` — タイムゾーン込みの日時
-- `Temporal.Duration` — 期間・差分
+変更操作は元のインスタンスを書き換えず、新しいインスタンスを返します。
 
-### Temporal.Now — 現在時刻を粒度ごとに取る
+```js
+const t0 = Temporal.Instant.from("2026-05-17T10:00:00Z");
+const t1 = t0.add({ hours: 3, minutes: 15 });
+console.log("t0:", t0.toString(), "← 元は変わらない");
+console.log("t1:", t1.toString(), "← 3時間15分後");
+```
 
-`Date.now()` がミリ秒タイムスタンプを、`new Date()` がローカル日時を返すという二択だった世界に対し、Temporal は「どの粒度・どのタイムゾーンの現在時刻が欲しいか」を呼び分ける設計を取ります。
+```console
+t0: 2026-05-17T10:00:00Z ← 元は変わらない
+t1: 2026-05-17T13:15:00Z ← 3時間15分後
+```
+
+`Date.prototype.setUTCMonth` のような「自身を書き換えるメソッド」は `Temporal` には存在しません。
+
+#### 差分は `until` / `since`
+
+```js
+const a = Temporal.Instant.from("2026-05-17T10:00:00Z");
+const b = Temporal.Instant.from("2026-05-18T11:30:00Z");
+console.log("a.until(b)               :", a.until(b).toString());
+console.log("largestUnit:'hour' で整形:", a.until(b, { largestUnit: "hour" }).toString());
+```
+
+```console
+a.until(b)               : PT91800S
+largestUnit:'hour' で整形: PT25H30M
+```
+
+デフォルトでは秒単位の Duration（`PT91800S`）が返ります。上位の単位まで繰り上げたい場合は `largestUnit` を指定します。日や月の長さはタイムゾーンや暦法で変わるため、デフォルトでそこまでは繰り上げません。
+
+### Temporal.ZonedDateTime — タイムゾーン込みの実時刻
+
+タイムゾーン情報を **値の一部として** 持つ日時です。タイムゾーンルール（夏時間の切り替えを含む）に従って計算されます。
+
+```js
+const inst = Temporal.Instant.from("2026-05-17T10:00:00Z");
+console.log("UTC             :", inst.toString());
+console.log("Asia/Tokyo      :", inst.toZonedDateTimeISO("Asia/Tokyo").toPlainDateTime().toString());
+console.log("Europe/London   :", inst.toZonedDateTimeISO("Europe/London").toPlainDateTime().toString());
+console.log("America/New_York:", inst.toZonedDateTimeISO("America/New_York").toPlainDateTime().toString());
+```
+
+```console
+UTC             : 2026-05-17T10:00:00Z
+Asia/Tokyo      : 2026-05-17T19:00:00
+Europe/London   : 2026-05-17T11:00:00
+America/New_York: 2026-05-17T06:00:00
+```
+
+同じ `Instant`（絶対的な瞬間）を、タイムゾーンを通して各地の日時に変換しています。逆に各タイムゾーンの日時から `Instant` への変換も同じように用意されています。
+
+#### DST: 存在しない時刻を渡したら
+
+米ニューヨークは毎年3月の第2日曜に時計が午前2時から午前3時に切り替わります。`2026-03-08 02:30` は存在しない時刻です。
+
+```js
+const dst = Temporal.ZonedDateTime.from("2026-03-08T02:30[America/New_York]");
+console.log("入力 2026-03-08T02:30 [America/New_York]");
+console.log("→ 実際の時刻       :", dst.toString());
+console.log("→ オフセット        :", dst.offset);
+```
+
+```console
+入力 2026-03-08T02:30 [America/New_York]
+→ 実際の時刻       : 2026-03-08T03:30:00-04:00[America/New_York]
+→ オフセット        : -04:00
+```
+
+デフォルトで「DST 後のオフセット」を採用し、`03:30` に補正します。`disambiguation: 'reject'` を渡せば例外にすることもできます。
+
+#### DST の境目で「1日 ≠ 24時間」
+
+DST 切替日をまたぐと、1日が23時間や25時間になります。
+
+```js
+const before = Temporal.ZonedDateTime.from("2026-03-07T12:00[America/New_York]");
+const after = before.add({ days: 1 });
+console.log("3/7 12:00 + 1 day :", after.toString());
+console.log("実経過時間         :", before.until(after, { largestUnit: "hour" }).toString());
+```
+
+```console
+3/7 12:00 + 1 day : 2026-03-08T12:00:00-04:00[America/New_York]
+実経過時間         : PT23H
+```
+
+`add({ days: 1 })` はカレンダー上で 12:00 → 12:00 の1日後ですが、実経過時間は **23時間** です。`Temporal` は `days` と `hours` を別概念として扱います。
+
+- `days: 1` → カレンダー上の1日先
+- `hours: 24` → 実際に経過する時間で24時間後
+
+#### `withTimeZone` と `toPlainDateTime().toZonedDateTime()` の使い分け
+
+```js
+const tokyo9 = Temporal.ZonedDateTime.from("2026-05-17T09:00[Asia/Tokyo]");
+const sameInstantInNY = tokyo9.withTimeZone("America/New_York");
+console.log("Tokyo 09:00 = NY:", sameInstantInNY.toString());
+
+const ny9 = tokyo9.toPlainDateTime().toZonedDateTime("America/New_York");
+console.log("NY も 09:00:", ny9.toString());
+```
+
+```console
+Tokyo 09:00 = NY: 2026-05-16T20:00:00-04:00[America/New_York]
+NY も 09:00: 2026-05-17T09:00:00-04:00[America/New_York]
+```
+
+- `withTimeZone(zone)` — 同じ瞬間を別タイムゾーンで表示する
+- `toPlainDateTime().toZonedDateTime(zone)` — 日時の数字を維持したまま別タイムゾーンに置き換える
+
+「東京の朝9時と同じ瞬間、ニューヨークは何時？」と「東京の朝9時に開催する会議を、ニューヨーク現地でも朝9時開催に置き換えたい」は別の操作です。`Temporal` はこの2つを別メソッドに分けて、書き手にどちらの意味かを選ばせます。
+
+### PlainDate / PlainTime / PlainDateTime — タイムゾーンなしの日時
+
+`Date` は UTC タイムスタンプと年月日時分秒の成分を1つに詰めていました。`Temporal` はそれを分離します。
+
+```js
+const birthday = Temporal.PlainDate.from("2000-04-12");
+console.log("birthday    :", birthday.toString());
+console.log("dayOfWeek   :", birthday.dayOfWeek);
+console.log("daysInMonth :", birthday.daysInMonth);
+console.log("inLeapYear  :", birthday.inLeapYear);
+```
+
+```console
+birthday    : 2000-04-12
+dayOfWeek   : 3
+daysInMonth : 30
+inLeapYear  : true
+```
+
+`PlainDate` は時刻もタイムゾーンも持たない日付です。
+
+#### 不正な日付は例外で弾く
+
+```js
+try {
+  Temporal.PlainDate.from("2026-02-30");
+} catch (e) {
+  console.log("error:", e.message);
+}
+```
+
+```console
+error: Temporal error: Parsed day value not in a valid range.
+```
+
+`Date` が黙って `3/2` にしていたところを、`Temporal` は明示的に例外を投げます。同じ考え方が時刻にも適用されていて、`PlainTime.from("25:00")` も例外を投げます。
+
+#### 時刻だけ・日時だけの型
+
+```js
+const alarm = Temporal.PlainTime.from("08:00");
+console.log("alarm        :", alarm.toString());
+console.log("hour         :", alarm.hour);
+console.log("+ 90 minutes:", alarm.add({ minutes: 90 }).toString());
+
+const meeting = Temporal.PlainDateTime.from("2026-05-17T15:30");
+console.log("meeting        :", meeting.toString());
+console.log("+ 2 hours      :", meeting.add({ hours: 2 }).toString());
+console.log("with year=2030 :", meeting.with({ year: 2030 }).toString());
+```
+
+```console
+alarm        : 08:00:00
+hour         : 8
++ 90 minutes: 09:30:00
+meeting        : 2026-05-17T15:30:00
++ 2 hours      : 2026-05-17T17:30:00
+with year=2030 : 2030-05-17T15:30:00
+```
+
+`with` メソッドは「一部のフィールドだけ差し替えた新しいインスタンスを返す」操作です。
+
+#### 年月だけ・月日だけ
+
+```js
+const cardExpiry = Temporal.PlainYearMonth.from("2030-12");
+const christmas = Temporal.PlainMonthDay.from("--12-25");
+console.log("PlainYearMonth :", cardExpiry.toString());
+console.log("PlainMonthDay  :", christmas.toString());
+```
+
+```console
+PlainYearMonth : 2030-12
+PlainMonthDay  : 12-25
+```
+
+「年」を持たない月日の型が独立しているため、誕生日の月日のように `2/29` を扱えるかどうかを別の型として区別したい場面でそのまま使えます。
+
+### Temporal.Duration — 期間と差分
+
+```js
+const dur = Temporal.Duration.from({ minutes: 130, seconds: 45 });
+console.log("dur                          :", dur.toString());
+console.log("round({ largestUnit: 'hour'}):", dur.round({ largestUnit: "hour" }).toString());
+console.log("round({ smallestUnit:'min'}):", dur.round({ smallestUnit: "minute" }).toString());
+```
+
+```console
+dur                          : PT130M45S
+round({ largestUnit: 'hour'}): PT2H10M45S
+round({ smallestUnit:'min'}): PT131M
+```
+
+`round` で粒度を上げ下げできます。
+
+#### カレンダーを考慮した加算
+
+`ZonedDateTime` と組み合わせると、暦法を考慮した月の加算ができます。`Date.setMonth` が `1/31 + 1ヶ月` で `3/3` になっていた問題は、`Temporal` だと月末は月末に丸められます。
+
+```js
+const start = Temporal.ZonedDateTime.from("2026-01-31T10:00[Asia/Tokyo]");
+console.log("1/31 + 1 month:", start.add({ months: 1 }).toString());
+```
+
+```console
+1/31 + 1 month: 2026-02-28T10:00:00+09:00[Asia/Tokyo]
+```
+
+「1月31日の1ヶ月後」を「2月の最終日（28日または29日）」として解釈します。
+
+### Temporal.Now — 現在時刻
+
+`Date.now()` 一択だった現在時刻取得が、粒度とタイムゾーンを呼び分けられる API に変わりました。
 
 ```js
 const instant = Temporal.Now.instant();
@@ -172,252 +445,19 @@ plainTimeISO    : 19:45:34.682677002
 timeZoneId()    : Asia/Tokyo
 ```
 
-`instant()` はナノ秒精度の UTC タイムスタンプです。`epochNanoseconds` は **BigInt** で返ります。ナノ秒の値は `Number` の安全整数の範囲を超えるので、整数値で精度を保つために `BigInt` になります。
+`epochNanoseconds` は **BigInt** で返ります。ナノ秒の値は `Number` の安全整数の範囲（約 9 × 10^15）を超えるため、整数で精度を保つには BigInt が必要だからです。
 
-「いま Tokyo は何日？」は `plainDateISO("Asia/Tokyo")` のように粒度とタイムゾーンを引数で明示します。`Date` で同じことをするには `toLocaleString` の出力を文字列パースする必要があり、明示的なAPIが用意されている分 Temporal の方が安全です。
-
-### Temporal.Instant — UTC 基準の「瞬間」
-
-`Instant` は「いつ」を絶対的に指す値です。タイムゾーンも暦も持たず、エポックからのナノ秒数だけで定義されます。サーバ間のタイムスタンプ同期、ログのイベント順序、外部APIの `created_at` のような「機械間の時刻」はこのクラスが第一候補です。
-
-```js
-const fromString = Temporal.Instant.from("2026-05-17T10:00:00Z");
-const fromMs = Temporal.Instant.fromEpochMilliseconds(1_779_012_000_000);
-const fromNs = Temporal.Instant.fromEpochNanoseconds(1_779_012_000_000_000_000n);
-console.log("from string :", fromString.toString());
-console.log("from ms     :", fromMs.toString());
-console.log("from ns     :", fromNs.toString());
-```
-
-```console
-from string : 2026-05-17T10:00:00Z
-from ms     : 2026-05-17T10:00:00Z
-from ns     : 2026-05-17T10:00:00Z
-```
-
-値が書き換わらないことを確認します。
-
-```js
-const t0 = Temporal.Instant.from("2026-05-17T10:00:00Z");
-const t1 = t0.add({ hours: 3, minutes: 15 });
-console.log("t0:", t0.toString(), "← 元は変わらない");
-console.log("t1:", t1.toString(), "← 3時間15分後");
-```
-
-```console
-t0: 2026-05-17T10:00:00Z ← 元は変わらない
-t1: 2026-05-17T13:15:00Z ← 3時間15分後
-```
-
-`Date.prototype.setUTCMonth` のような「自身を書き換えるメソッド」は Temporal には一切ありません。すべての変更操作が新しいインスタンスを返します。
-
-差分は `until` / `since` で取れます。
-
-```js
-const a = Temporal.Instant.from("2026-05-17T10:00:00Z");
-const b = Temporal.Instant.from("2026-05-18T11:30:00Z");
-console.log("a.until(b)               :", a.until(b).toString());
-console.log("largestUnit:'hour' で整形:", a.until(b, { largestUnit: "hour" }).toString());
-```
-
-```console
-a.until(b)               : PT91800S
-largestUnit:'hour' で整形: PT25H30M
-```
-
-デフォルトでは秒単位の Duration（`PT91800S`）として返ります。「25時間30分」のように上位の単位まで繰り上げたい場合は `largestUnit` を指定します。秒からの繰り上がりは暦法やタイムゾーンに依存しないため、デフォルトで日や月までは繰り上げません（日や月の長さはタイムゾーンと暦法で変わるため）。
-
-### PlainDate / PlainTime / PlainDateTime — タイムゾーンを持たない、日付・時刻だけの型
-
-`Date` は UTC タイムスタンプと、年月日時分秒の成分の両方を1つのオブジェクトに詰めていました。Temporal はそれを分離します。
-
-```js
-const birthday = Temporal.PlainDate.from("2000-04-12");
-console.log("birthday    :", birthday.toString());
-console.log("dayOfWeek   :", birthday.dayOfWeek);
-console.log("daysInMonth :", birthday.daysInMonth);
-console.log("inLeapYear  :", birthday.inLeapYear);
-```
-
-```console
-birthday    : 2000-04-12
-dayOfWeek   : 3
-daysInMonth : 30
-inLeapYear  : true
-```
-
-`PlainDate` は **時刻もタイムゾーンも持たない日付** です。誕生日、契約日、休日表のような「壁掛けカレンダーに丸を付ける」種類の値はこれで表現します。
-
-存在しない日付を入れた場合の挙動も `Date` とは異なります。
-
-```js
-try {
-  Temporal.PlainDate.from("2026-02-30");
-} catch (e) {
-  console.log("error:", e.message);
-}
-```
-
-```console
-error: Temporal error: Parsed day value not in a valid range.
-```
-
-`Date` が黙って `3/2` にしていたところを、`Temporal` は例外で弾きます。同じ考え方が時刻にも適用されていて、`PlainTime.from("25:00")` も例外を投げます。
-
-時刻だけ・日時だけ用の型も揃っています。
-
-```js
-const alarm = Temporal.PlainTime.from("08:00");
-console.log("alarm        :", alarm.toString());
-console.log("hour         :", alarm.hour);
-console.log("+ 90 minutes:", alarm.add({ minutes: 90 }).toString());
-
-const meeting = Temporal.PlainDateTime.from("2026-05-17T15:30");
-console.log("meeting        :", meeting.toString());
-console.log("+ 2 hours      :", meeting.add({ hours: 2 }).toString());
-console.log("with year=2030 :", meeting.with({ year: 2030 }).toString());
-```
-
-```console
-alarm        : 08:00:00
-hour         : 8
-+ 90 minutes: 09:30:00
-meeting        : 2026-05-17T15:30:00
-+ 2 hours      : 2026-05-17T17:30:00
-with year=2030 : 2030-05-17T15:30:00
-```
-
-`with` メソッドは「一部のフィールドだけ差し替えた新しいインスタンスを返す」操作です。
-
-さらに細かい単位として `PlainYearMonth`（クレジットカード有効期限）と `PlainMonthDay`（毎年同じ月日、たとえば祝日）も別クラスとして用意されています。
-
-```js
-const cardExpiry = Temporal.PlainYearMonth.from("2030-12");
-const christmas = Temporal.PlainMonthDay.from("--12-25");
-console.log("PlainYearMonth :", cardExpiry.toString());
-console.log("PlainMonthDay  :", christmas.toString());
-```
-
-```console
-PlainYearMonth : 2030-12
-PlainMonthDay  : 12-25
-```
-
-「年」を持たない月日のための型が独立しているので、誕生日の月日のように 2/29 を扱えるかどうかを別の型として区別したい場面でそのまま使えます。
-
-### ZonedDateTime — タイムゾーン込みの日時、DST も扱える
-
-`ZonedDateTime` はタイムゾーン情報を値の一部として持つ型です。
-
-```js
-const inst = Temporal.Instant.from("2026-05-17T10:00:00Z");
-console.log("UTC             :", inst.toString());
-console.log("Asia/Tokyo      :", inst.toZonedDateTimeISO("Asia/Tokyo").toPlainDateTime().toString());
-console.log("Europe/London   :", inst.toZonedDateTimeISO("Europe/London").toPlainDateTime().toString());
-console.log("America/New_York:", inst.toZonedDateTimeISO("America/New_York").toPlainDateTime().toString());
-```
-
-```console
-UTC             : 2026-05-17T10:00:00Z
-Asia/Tokyo      : 2026-05-17T19:00:00
-Europe/London   : 2026-05-17T11:00:00
-America/New_York: 2026-05-17T06:00:00
-```
-
-同じ `Instant`（絶対的な瞬間）を、タイムゾーンを通して「各タイムゾーンでの日時」に変換しています。逆に、各タイムゾーンの日時から `Instant` への変換も同じように用意されています。
-
-`Date` だと自前で実装する必要があった DST（夏時間）の扱いも、Temporal は仕様として明示的に扱います。米ニューヨークは毎年3月の第2日曜に時計が午前2時から午前3時へ切り替わるため、「2026-03-08 02:30 アメリカ東部時間」という時刻は **存在しません**。
-
-```js
-const dst = Temporal.ZonedDateTime.from("2026-03-08T02:30[America/New_York]");
-console.log("入力 2026-03-08T02:30 [America/New_York]");
-console.log("→ 実際の時刻       :", dst.toString());
-console.log("→ オフセット        :", dst.offset);
-```
-
-```console
-入力 2026-03-08T02:30 [America/New_York]
-→ 実際の時刻       : 2026-03-08T03:30:00-04:00[America/New_York]
-→ オフセット        : -04:00
-```
-
-存在しない時刻の入力に対し、Temporal はデフォルトで「DST 後のオフセットを採用する」動作で 03:30 に補正します。`disambiguation: 'reject'` を渡せば例外にすることもでき、ユーザー入力のバリデーションに使えます。
-
-DST の境目をまたぐ場合、「1日 = 24時間」が成立しません。Temporal はこれをそのまま計算結果に反映します。
-
-```js
-const before = Temporal.ZonedDateTime.from("2026-03-07T12:00[America/New_York]");
-const after = before.add({ days: 1 });
-console.log("3/7 12:00 + 1 day :", after.toString());
-console.log("実経過時間         :", before.until(after, { largestUnit: "hour" }).toString());
-```
-
-```console
-3/7 12:00 + 1 day : 2026-03-08T12:00:00-04:00[America/New_York]
-実経過時間         : PT23H
-```
-
-`add({ days: 1 })` の結果はカレンダー上で 12:00 → 12:00 で1日後ですが、実経過時間は **23時間**です。Temporal は `days` と `hours` を意図的に区別していて、`days: 1` は「カレンダー上の1日先」、`hours: 24` は「実際に経過する時間で24時間後」と別物として扱います。
-
-`withTimeZone` と `toPlainDateTime().toZonedDateTime(zone)` の使い分けもあります。前者は「同じ瞬間を別タイムゾーンで表示する」、後者は「日時の数字を維持したまま別タイムゾーンに置き換える」操作です。
-
-```js
-const tokyo9 = Temporal.ZonedDateTime.from("2026-05-17T09:00[Asia/Tokyo]");
-const sameInstantInNY = tokyo9.withTimeZone("America/New_York");
-console.log("Tokyo 09:00 = NY:", sameInstantInNY.toString());
-
-const ny9 = tokyo9.toPlainDateTime().toZonedDateTime("America/New_York");
-console.log("NY も 09:00:", ny9.toString());
-```
-
-```console
-Tokyo 09:00 = NY: 2026-05-16T20:00:00-04:00[America/New_York]
-NY も 09:00: 2026-05-17T09:00:00-04:00[America/New_York]
-```
-
-「東京の朝9時と同じ瞬間、ニューヨークは何時？」と「東京の朝9時に開催する会議をニューヨーク現地時間で朝9時開催に置き換えたい」は別の操作です。Temporal はこの2つを別メソッドに分けて、書き手にどちらの意味かを選ばせます。
-
-### Duration — 期間と差分、丸めまで仕様に含まれる
-
-`Duration` は「期間」を表す独立した値です。
-
-```js
-const dur = Temporal.Duration.from({ minutes: 130, seconds: 45 });
-console.log("dur                          :", dur.toString());
-console.log("round({ largestUnit: 'hour'}):", dur.round({ largestUnit: "hour" }).toString());
-console.log("round({ smallestUnit:'min'}):", dur.round({ smallestUnit: "minute" }).toString());
-```
-
-```console
-dur                          : PT130M45S
-round({ largestUnit: 'hour'}): PT2H10M45S
-round({ smallestUnit:'min'}): PT131M
-```
-
-`round` で粒度を上げ下げするAPIが揃っています。`ZonedDateTime` と組み合わせるとカレンダー対応の加算ができ、`Date` の `setMonth` が `1/31 + 1ヶ月` で `3/3` になっていた問題は、Temporal だと月末は月末に丸められます。
-
-```js
-const start = Temporal.ZonedDateTime.from("2026-01-31T10:00[Asia/Tokyo]");
-console.log("1/31 + 1 month:", start.add({ months: 1 }).toString());
-```
-
-```console
-1/31 + 1 month: 2026-02-28T10:00:00+09:00[Asia/Tokyo]
-```
-
-「1月31日の1ヶ月後」を「2月の最終日（28日または29日）」として解釈します。
-
-## Date の問題と Temporal の対応関係
+## Date と Temporal の対応関係
 
 | Date の問題 | Temporal の対応 |
 |---|---|
 | すべてのセッターがミュータブル | すべての変更操作が新しいインスタンスを返す（イミュータブル） |
-| 同じ Date で UTC とローカルで違う時刻が返る | `Instant`（UTC の瞬間）と `ZonedDateTime` / `PlainDateTime`（タイムゾーン付き／暦上の日時）で型から分離 |
+| タイムスタンプと成分の2つの役割を1つの型に詰めている | タイムスタンプは `Instant`、成分は `PlainDate` / `PlainTime` / `PlainDateTime` / `ZonedDateTime` に分離 |
 | タイムゾーンは UTC とローカルのみ | `ZonedDateTime` がタイムゾーンを値の一部として持つ |
 | グレゴリオ暦以外を扱えない | `withCalendar("japanese")` などで和暦・ヘブライ暦・中国暦に切り替え可能 |
 | 日時文字列の解釈が一貫しない | 各クラスの `from()` が厳格にパース。不正な値は例外で弾く |
 
-## ユースケース別: 何にどのクラスを使うか
+## ユースケース別の使い分け
 
 | やりたいこと | 適切なクラス | 理由 |
 |---|---|---|
@@ -427,16 +467,16 @@ console.log("1/31 + 1 month:", start.add({ months: 1 }).toString());
 | 誕生日（月日のみ、年なし） | `Temporal.PlainMonthDay` | 2/29 などを型で区別できる |
 | 契約日、休日表、請求書日付 | `Temporal.PlainDate` | 時刻情報が混入しない |
 | クレジットカード有効期限 | `Temporal.PlainYearMonth` | 月単位で十分 |
-| 「2時間30分」「3日間」のような期間 | `Temporal.Duration` | カレンダー対応の加算と丸めができる |
+| 「2時間30分」「3営業日」のような期間 | `Temporal.Duration` | カレンダー対応の加算と丸めができる |
 | ローカルでの会議予約フォーム | `Temporal.PlainDateTime` | ユーザー入力の時点ではゾーン未確定 |
 
 ## まとめ
 
 - Node.js v26 で `Temporal` がフラグなしで利用可能になり、サーバサイドJSでは標準APIとして使える段階になった
-- MDN が挙げる `Date` の設計上の問題（ミュータブル・役割の混在・タイムゾーンの制限・暦法の制限・パース不一貫）は、Temporal の役割分離・イミュータブル設計でそれぞれ対応している
+- MDN が挙げる `Date` の設計上の問題（ミュータブル・役割の混在・タイムゾーンの制限・暦法の制限・パース不一貫）は、`Temporal` の役割分離・イミュータブル設計でそれぞれ対応している
 - 実用範囲は `Now` / `Instant` / `PlainDate` 系 / `ZonedDateTime` / `Duration` の5系統でカバーできる
 - ブラウザ側は Safari が未対応のため、フロントエンドで全面採用するなら `@js-temporal/polyfill` か `temporal-polyfill` の併用が現実的
-- 新規プロジェクトは Temporal で書き始められる段階。既存コードの移行は `Date` を `Instant`（UTC）か `ZonedDateTime`（タイムゾーン込み）のどちらに置き換えるかの判断を起点に進められる
+- 新規プロジェクトは `Temporal` で書き始められる段階。既存コードの移行は `Date` を `Instant`（UTC）か `ZonedDateTime`（タイムゾーン込み）のどちらに置き換えるかの判断を起点に進められる
 
 ## 参考
 
