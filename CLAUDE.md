@@ -49,6 +49,7 @@ YYYY-MM-記事スラッグ.md
 ## 利用可能なスキル
 
 - `/japanese-natural-writing` — 日本語テックブログのAI文体を検出・除去し、自然な人間らしい日本語に書き直す
+- `/japanese-tech-writing` — 日本語技術文書の文章規範（整形・段落構成・論証の厳密さ・冗長排除・LLM表現禁止）に沿ってリファイン
 - `/technical-editor-review` — 商用技術雑誌の編集者視点で記事をレビュー（技術精度・論理構造・読みやすさ・読み物としての魅力）
 - `/blog-hit-strategy` — 過去記事の実績データをもとにQiita向け戦略を提示（タイトル設計・トピック選定・構成パターン）
 - `/technical-blog-writing` — 開発者向け技術記事の構成・コード例・慣習のガイダンス
@@ -66,8 +67,9 @@ YYYY-MM-記事スラッグ.md
 3. `/technical-blog-writing` のガイドラインに従って本文を執筆
 4. `/blog-originality` で手を動かした記録・疑問・トレンド接続を追加
 5. `npx qiita preview` でプレビュー確認
-6. `/japanese-natural-writing` でAI文体を除去
-7. `/technical-editor-review` で技術精度・論理構造・読み物価値を編集者視点でレビュー
-8. `ignorePublish: false` に変更して `npx qiita publish` で投稿
-9. `/qiita-tweet` でX投稿文を生成して投稿
-10. `git add` → `git commit` → `git push` でGit管理
+6. `/japanese-tech-writing` で文章規範チェック・リファイン（構造・論証・冗長排除・LLM表現）
+7. `/japanese-natural-writing` でAI文体を除去（仕上げ）
+8. `/technical-editor-review` で技術精度・論理構造・読み物価値を編集者視点でレビュー
+9. `ignorePublish: false` に変更して `npx qiita publish` で投稿
+10. `/qiita-tweet` でX投稿文を生成して投稿
+11. `git add` → `git commit` → `git push` でGit管理
