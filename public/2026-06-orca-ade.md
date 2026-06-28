@@ -67,7 +67,7 @@ macOSの場合、公式サイトからdmgをダウンロードしてインスト
 
 Orcaはワークツリーの作成、削除、エージェント起動をUIから操作できる。
 
-![Orcaのメイン画面。左ペインに複数のワークツリーが一覧表示され、それぞれのエージェントの実行状態が確認できる](../assets/2026-06-orca-ade/main-ui.jpg)
+![Orcaのメイン画面。左ペインに複数のワークツリーが一覧表示され、それぞれのエージェントの実行状態が確認できる](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/554111/1f8e9c58-0578-4f35-a689-3c73bb0a581a.jpeg)
 
 ワークフローはこうなる。
 
@@ -96,15 +96,15 @@ Orcaはワークツリーの作成、削除、エージェント起動をUIか�
 
 Design Modeでは、Chromium上の任意のUI要素をクリックすると、そのHTML、CSS、クロップされたスクリーンショットが自動でエージェントのプロンプトに送信される。
 
-![Design Modeの画面。内蔵ChromiumでUIを表示しながら、要素をクリックするとエージェントへの入力が自動で生成される](../assets/2026-06-orca-ade/design-mode.jpg)
+![Design Modeの画面。内蔵ChromiumでUIを表示しながら、要素をクリックするとエージェントへの入力が自動で生成される](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/554111/dea8e13f-3ff2-4d3d-8595-43d9f8acfb10.jpeg)
 
 Chromium上のボタン要素をクリックすると、そのセレクタ、寸法、計算済みスタイル、HTMLがクリップボードにコピーされる。それをエージェントの入力欄にペーストして短い指示を添えるだけで、セレクタを手書きする必要がない。
 
-![Design Mode依頼前。ボタンをクリックして取得した要素情報とともに「背景色を紫色に変えて」と入力している](../assets/2026-06-orca-ade/design-mode-before.jpg)
+![Design Mode依頼前。ボタンをクリックして取得した要素情報とともに「背景色を紫色に変えて」と入力している](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/554111/9762b53c-c7bd-40f3-91fc-17882c88ebbc.jpeg)
 
 エージェントは要素情報から `button#btn` のセレクタと現在の `background: rgb(79, 70, 229)` を把握した上で `style.css` を書き換える。
 
-![Design Mode依頼後。ボタンの背景色が青から紫（#7c3aed）に変わり、エージェントがstyle.cssのdiffを表示している](../assets/2026-06-orca-ade/design-mode-after.jpg)
+![Design Mode依頼後。ボタンの背景色が青から紫（#7c3aed）に変わり、エージェントがstyle.cssのdiffを表示している](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/554111/d761cdb7-582e-4487-a397-059500308b45.jpeg)
 
 言葉で伝えにくい位置ズレやマージン崩れは、スクリーンショットと要素のHTMLを両方渡すことでエージェントが構造を把握しやすくなる。
 
@@ -112,7 +112,7 @@ Chromium上のボタン要素をクリックすると、そのセレクタ、寸
 
 worktreeの実装が終わったあと、Orca上でdiffに対してMarkdownコメントを付与できる。コメントをバッチでエージェントに返送することで、追加修正のやり取りが一箇所で完結する。
 
-![差分レビュー画面。diffに対してMarkdownコメントを付与し、バッチでエージェントに返送できる](../assets/2026-06-orca-ade/diff-review.jpg)
+![差分レビュー画面。diffに対してMarkdownコメントを付与し、バッチでエージェントに返送できる](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/554111/ecf7df8d-7dde-4b13-9455-cc766cb65b65.jpeg)
 
 diffビューはGitHubのPRレビュー画面に近いUIで、行単位の緑と赤のハイライトになっている。「この変数名を直してほしい」「この処理に副作用がある」といったコメントをdiffの該当行に紐付けて残せる。レビューが終わったらコメントをまとめてエージェントに送信して再実装させる、というサイクルが一画面で回る。
 
