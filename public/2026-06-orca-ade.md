@@ -7,7 +7,7 @@ tags:
   - AIエージェント
   - ClaudeCode
 private: true
-updated_at: '2026-06-28T16:54:51+09:00'
+updated_at: '2026-06-28T17:23:59+09:00'
 id: 9b22ca0b287309ebba32
 organization_url_name: null
 slide: false
@@ -102,7 +102,7 @@ Chromium上のボタン要素をクリックすると、そのセレクタ、寸
 
 ![Design Mode依頼前。ボタンをクリックして取得した要素情報とともに「背景色を紫色に変えて」と入力している](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/554111/9762b53c-c7bd-40f3-91fc-17882c88ebbc.jpeg)
 
-エージェントは要素情報から `button#btn` のセレクタと現在の `background: rgb(79, 70, 229)` を把握し、そのまま `style.css` を書き換えてくれた。
+エージェントは要素情報から `button#btn` のセレクタと現在のスタイルを把握し、そのまま `style.css` を書き換えてくれた。
 
 ![Design Mode依頼後。ボタンの背景色が青から紫（#7c3aed）に変わり、エージェントがstyle.cssのdiffを表示している](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/554111/d761cdb7-582e-4487-a397-059500308b45.jpeg)
 
