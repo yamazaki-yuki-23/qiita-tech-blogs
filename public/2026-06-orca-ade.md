@@ -1,17 +1,17 @@
 ---
 title: 【Claude Code】AIエージェントを並列実行できるADE「Orca」を試した
 tags:
-  - ClaudeCode
-  - AIエージェント
-  - AI
+  - Git
   - 開発環境
-  - git
-private: false
-updated_at: ''
-id: null
+  - AI
+  - AIエージェント
+  - ClaudeCode
+private: true
+updated_at: '2026-06-28T16:54:51+09:00'
+id: 9b22ca0b287309ebba32
 organization_url_name: null
 slide: false
-ignorePublish: true
+ignorePublish: false
 ---
 
 **TL;DR**
@@ -31,13 +31,7 @@ Claude Codeを日常的に使い始めると、気づくとターミナルのタ
 
 こういう使い方をしているなら git worktree を使えばいい、というのは頭ではわかっている。ただ worktree の作成、切り替え、削除を手動で管理しながら複数エージェントを走らせ続けるのは、CLIだけでは思ったより煩雑だ。
 
-そこで見つけたのが Orca だ。
-
-## 本記事の問い
-
-> 「複数のAIエージェントを並列で走らせる」という使い方は、実際に開発効率を上げるのか
-
-Orcaは "Ship 100x" を掲げるが、本当にそういった体験があるのかをインストールして確かめた。並列ワークツリーの仕組み、Design Mode、差分レビューの3機能を中心に、実際に動かした記録をまとめる。
+そこで見つけたのが Orca だ。「複数のAIエージェントを並列で走らせると実際に開発効率が上がるのか」をインストールして確かめた。並列ワークツリーの仕組み、Design Mode、差分レビューの3機能を中心に、実際に動かした記録をまとめる。
 
 ## Orcaとは
 
