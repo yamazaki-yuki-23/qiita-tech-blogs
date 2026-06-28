@@ -16,7 +16,7 @@ ignorePublish: true
 
 **TL;DR**
 
-- Orcaは「ADE（Agent Development Environment）」というカテゴリを名乗るOSSのデスクトップアプリで、複数のAIコーディングエージェントを独立したgit worktreeで並列実行できる
+- Orcaは「Agent Development Environment（ADE）」というカテゴリを名乗るOSSのデスクトップアプリで、複数のAIコーディングエージェントを独立したgit worktreeで並列実行できる
 - IDEとの最大の違いは、複数エージェントの並列実行と比較、統合を前提に設計されている点にある。Claude Code、Codex、Geminiなど25以上のCLIエージェントをサポートする
 - Design Modeでは内蔵ChromiumのUI要素をクリックするとHTML、CSS、スクリーンショットが自動でエージェントに渡される。要素を言葉で説明せずに指示できる
 - MITライセンスのフルOSSで無料。macOS / Windows / Linux 対応、iOS/Androidのモバイルアプリもある
@@ -45,7 +45,7 @@ Orcaは、YCombinator出資のStably.aiが開発しているデスクトップ�
 
 https://www.onorca.dev/
 
-カテゴリとして「ADE（Agent Development Environment）」を名乗っており、IDEとは異なる設計思想を持つ。GitHubリポジトリは8,000スター超（2026年6月時点）、リリース数は660を超えており開発が活発に続いている。
+カテゴリとして「Agent Development Environment（ADE）」を名乗っており、IDEとは異なる設計思想を持つ。GitHubリポジトリは8,000スター超（2026年6月時点）、リリース数は660を超えており開発が活発に続いている。
 
 https://github.com/stablyai/orca
 
@@ -140,7 +140,7 @@ GitHubとLinearのネイティブ統合も今回は試していない。「issue
 
 **まだ開発途上の機能がある**：一部の機能は「coming soon」の状態で、全機能が揃っているわけではない。
 
-**git管理が前提**：並列worktreeのメリットを得るにはgitリポジトリが必要だ。非git環境では通常のターミナルに近い動作になる。
+**git管理が前提**：並列worktreeのメリットを得るにはgitリポジトリが必要だ。非git環境では通常のターミナルと同等の動作になる。
 
 **node_modulesの重複**：`node_modules`はgit管理対象外のため、worktreeごとに`npm install`が必要になる。今回の軽量なデモアプリでは影響なかったが、Next.jsのような重い依存構成では新しいworktreeを作るたびに数分の初期化コストが発生する。並列で走らせるworktreeが増えるほどディスク使用量も増えるため、ローカルリソースに余裕がある環境前提の話になる。
 
@@ -148,7 +148,7 @@ GitHubとLinearのネイティブ統合も今回は試していない。「issue
 
 冒頭の問い「複数のAIエージェントを並列で走らせると実際に開発効率は上がるのか」に対して、正直に答えると「管理コストは下がる」だ。worktreeの状態把握をOrcaに任せることで、エージェントを走らせながら別のタスクに意識を向けやすくなる。管理コストが下がれば、並列で動かせるタスクの本数は増える。
 
-ただし "Ship 100x" が意味する "1人で100倍の作業をこなせる" かどうかは別の話だ。管理コストの削減と生産性の倍増は同じではない。そこまで踏み込んだ評価は継続使用を経ないとできない。
+ただし "Ship 100x" が意味する "1人で100倍の作業をこなせる" かどうかは別の話だ。管理コストの削減は生産性の倍増を保証しない。そこまで踏み込んだ評価は継続使用を経ないとできない。
 
 **こういう人には向く：**
 - Claude Codeを複数タブで手動管理していてworktreeの切り替えが煩雑になっている
