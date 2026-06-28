@@ -75,7 +75,7 @@ Orcaの根幹がここだ。
 
 Orcaはワークツリーの作成、削除、エージェント起動をUIから操作できる。
 
-![Orcaのメイン画面。左ペインに複数のワークツリーが一覧表示され、それぞれのエージェントの実行状態が確認できる](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-06-orca-ade/main-ui.jpg)
+![Orcaのメイン画面。左ペインに複数のワークツリーが一覧表示され、それぞれのエージェントの実行状態が確認できる](./assets/2026-06-orca-ade/main-ui.jpg)
 
 ワークフローはこうなる。
 
@@ -93,7 +93,7 @@ Orcaはワークツリーの作成、削除、エージェント起動をUIか�
 
 Design Modeでは、Chromium上の任意のUI要素をクリックすると、そのHTML、CSS、クロップされたスクリーンショットが自動でエージェントのプロンプトに送信される。
 
-![Design Modeの画面。内蔵ChromiumでUIを表示しながら、要素をクリックするとエージェントへの入力が自動で生成される](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-06-orca-ade/design-mode.jpg)
+![Design Modeの画面。内蔵ChromiumでUIを表示しながら、要素をクリックするとエージェントへの入力が自動で生成される](./assets/2026-06-orca-ade/design-mode.jpg)
 
 ```
 通常の依頼:
@@ -117,7 +117,7 @@ worktreeの実装が終わったあと、Orca上でdiffに対してMarkdownコ�
 
 複数のエージェントに同じタスクを投げて結果を比べる場合も、このdiffビューで横並び確認ができる。
 
-![差分レビュー画面。diffに対してMarkdownコメントを付与し、バッチでエージェントに返送できる](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-06-orca-ade/diff-review.jpg)
+![差分レビュー画面。diffに対してMarkdownコメントを付与し、バッチでエージェントに返送できる](./assets/2026-06-orca-ade/diff-review.jpg)
 
 ## 対応エージェント
 
