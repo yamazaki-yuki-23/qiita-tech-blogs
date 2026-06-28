@@ -6,7 +6,7 @@ tags:
   - Next.js
   - nextjs16
 private: false
-updated_at: '2026-06-27T22:33:40+09:00'
+updated_at: '2026-06-27T22:38:41+09:00'
 id: 18367216c7cecd8e4624
 organization_url_name: null
 slide: false
