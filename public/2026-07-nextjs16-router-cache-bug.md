@@ -30,7 +30,7 @@ Next.js を 15 系から 16 系（16.2）へアップデートしたところ、
 - なのに一覧の表示は古いまま。外したはずの `react` のチェックも外れない
 - ローディング表示も出ない
 
-実際の画面がこれだ（後述の最小再現アプリでの録画。上部の黒いバーはページ内に `location` の値を表示した可視化用のオーバーレイ）。react のチェックを外してもURLしか変わらない。
+実際の画面がこちら（後述の最小再現アプリでの録画。上部の黒いバーはページ内に `location` の値を表示した可視化用のオーバーレイ）。react のチェックを外してもURLしか変わらない。
 
 ![Next.js 16.2.10：チェックを外すとURLだけが変わり、一覧もチェックボックスも古いまま](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-07-nextjs16-router-cache-bug/repro-16-2-bug.gif)
 
@@ -48,13 +48,13 @@ Next.js を 15 系から 16 系（16.2）へアップデートしたところ、
 
 > [Next 16.2 router cache issue, if search param name is used multiple times #92152](https://github.com/vercel/next.js/issues/92152)
 
-タイトルに *"if search param name is used multiple times"* とある。「同じ検索パラメータ名を複数回使うと起きる」という意味だ。自分が踏んだのはまさにこれだった。Issueには色のチェックボックスで再現するリポジトリが添付されていて、報告者も「16.2 に上げてから起きるようになった」と書いている。
+タイトルの *"if search param name is used multiple times"* は「同じ検索パラメータ名を複数回使ったとき」。まさに自分が踏んだ状況だ。Issueには色のチェックボックスで再現するリポジトリが添付されていて、報告者も「16.2 に上げてから起きるようになった」と書いている。
 
-コメントを追うと、`router.refresh()` で無理やり回避しようとした人が「今度はアナリティクスのイベントが二重に飛ぶようになった」と報告していたり、複数のバージョン（16.2.1 / 16.2.4 / 16.2.5 / 16.2.6）で再現が確認されていたりする。そして決定打はこのコメントだった。
+コメントを追うと、`router.refresh()` で無理やり回避しようとした人が「今度はアナリティクスのイベントが二重に飛ぶようになった」と報告していたり、複数のバージョン（16.2.1 / 16.2.4 / 16.2.5 / 16.2.6）で再現が確認されていたりする。その中に、こんなコメントがあった。
 
 > My only fix is to roll back to 16.1, which I confirmed fixes this bug.
 
-16.1 に戻せば直る。この時点で、ダウングレードが確実な回避策になりそうだと見通しが立った。
+16.1 に戻せば直るらしい。いざとなればダウングレードで逃げられそうだ。
 
 ## 自分でも最小構成で再現する
 
@@ -137,7 +137,7 @@ export async function ArticleList({ selectedTags }: { selectedTags: string[] }) 
 
 ![Next.js 16.1.7：同じ操作でチェックが外れ、一覧もURLどおりに更新される](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-07-nextjs16-router-cache-bug/repro-16-1-ok.gif)
 
-ポイントは2つある。末尾の値を外す場合はバグらないこと、そしてリロードすれば直ること。この2つが、後で見る原因の説明とぴったり噛み合う。
+気になるのは、末尾の値を外す場合はバグらないことと、リロードすれば直ること。この2つは、原因を知ると腑に落ちた。
 
 ## 原因はキャッシュキーの衝突
 
