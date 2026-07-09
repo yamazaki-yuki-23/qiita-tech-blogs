@@ -16,7 +16,7 @@ ignorePublish: true
 
 - Next.js を 15 から 16.2 に上げたら、チェックボックスの複数選択フィルタでルート遷移がおかしくなった
 - `?tag=a&tag=b` のように**同じキーを複数回並べる**クエリで、末尾でない値を外すと、URLは変わるのに一覧が更新されない
-- 原因はクライアントのルーターキャッシュのキー計算。`Object.fromEntries(new URLSearchParams(...))` は同じキーが複数あると後の値で上書きして1つにまとめてしまう（`?tag=react&tag=nextjs` → `{ tag: "nextjs" }`）。そのため別々のURLが同じキャッシュキーになって衝突する（[vercel/next.js#92152](https://github.com/vercel/next.js/issues/92152)）
+- 原因はクライアントのルーターキャッシュのキー計算。`Object.fromEntries(new URLSearchParams(...))` は同じキーが複数あると後の値で上書きし、末尾の1つだけを残してしまう（`?tag=react&tag=nextjs` → `{ tag: "nextjs" }`）。そのため別々のURLが同じキャッシュキーになって衝突する（[vercel/next.js#92152](https://github.com/vercel/next.js/issues/92152)）
 - 修正PR（[#93368](https://github.com/vercel/next.js/pull/93368)）は本記事執筆時点で未マージ。**16.1系へのダウングレードで解消**した
 - 最小再現リポジトリ: https://github.com/yamazaki-yuki-23/nextjs-16-router-cache-repro
 
@@ -54,7 +54,7 @@ Next.js を 15 系から 16 系（16.2）へアップデートしたところ、
 
 ## 自分でも最小構成で再現する
 
-Issueの再現リポジトリは「色の選択」だったが、鵜呑みにせず自分の手でも切り分けたかったので、業務とは無関係なタグで記事を絞り込む一覧ページを最小構成で組んで再現させた。
+Issueの再現リポジトリは「色の選択」だったが、自分でも手を動かして確かめたかったので、タグで記事を絞り込む一覧ページを最小構成で組んで再現させた。
 
 ページ側（Server Component）は `searchParams` から選択タグを配列で受け取る。App Router では同じキーが複数あると配列で渡ってくる。
 
@@ -131,7 +131,7 @@ export async function ArticleList({ selectedTags }: { selectedTags: string[] }) 
 
 ポイントは2つ。**末尾の値を外す場合はバグらない**こと。そして**リロードすれば直る**こと。この2つが、後で見る原因の説明とぴったり噛み合う。
 
-なお、`next dev` では再現せず、`next build && next start`（本番ビルド）でだけ再現した。開発中は気づきにくいのが厄介なところだ。
+この挙動は `next dev` でも `next build && next start`（本番ビルド）でも同じように再現した。
 
 ## 原因：キャッシュキーが衝突する
 
@@ -143,7 +143,7 @@ Issueには、根本原因を突き止めて修正PRを出した人のコメン�
 Object.fromEntries(new URLSearchParams(renderedSearch))
 ```
 
-`URLSearchParams` は同じキーの値を全部持っている。しかし `Object.fromEntries` でオブジェクトに変換すると、オブジェクトは同じキーを2つ持てないため、**後の値で上書きされて1つだけになる**。
+`URLSearchParams` は同じキーの値を全部持っている。しかし `Object.fromEntries` でオブジェクトに変換すると、オブジェクトは同じキーを2つ持てないため、前から順に上書きされ、**末尾の値だけが残る**。
 
 ```ts
 Object.fromEntries(new URLSearchParams('tag=react&tag=nextjs'))
@@ -181,8 +181,8 @@ Issueのコメントによると、この潰れる書き方をしている箇所
 ## まとめ
 
 - Next.js 16.2 には、同じキーを複数回並べる検索パラメータを使ったフィルタで、クライアントのルーターキャッシュキーが衝突するバグがある
-- 原因は `Object.fromEntries(new URLSearchParams(...))` が、同じキーを後の値で上書きして1つにまとめてしまうこと。サーバー側は配列のまま保持するためキーの計算が食い違う
-- `next dev` では出ず、`next build && next start` で出る。末尾の値を外す分には問題なく、末尾でない値を外したときに踏む
+- 原因は `Object.fromEntries(new URLSearchParams(...))` が、同じキーを前から順に上書きし、末尾の1つだけを残してしまうこと。サーバー側は配列のまま保持するためキーの計算が食い違う
+- 末尾の値を外すぶんには問題なく、末尾でない値（1つめでも途中でも）を外したときにバグを踏む
 - 修正PRは執筆時点で未マージ。当面は 16.1 系へのダウングレードが確実
 
 複数選択のフィルタ条件をURLに載せる（`?tag=a&tag=b`）のは、共有やブックマークができて再現性も高いので、一覧画面やダッシュボードではよく使う作りだ。それだけに、このバグは実アプリで踏みやすい。「URLは変わるのに画面が変わらない」というのは、フレームワークのキャッシュを疑うのが難しい症状でもある。同じところで詰まった人の助けになれば。
