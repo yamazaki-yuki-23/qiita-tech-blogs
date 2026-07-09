@@ -1,16 +1,16 @@
 ---
 title: URLは変わるのに画面が更新されない ── Next.js 16.2のルーターキャッシュバグを調査した
 tags:
-  - Next.js
-  - React
   - TypeScript
   - フロントエンド
+  - React
+  - Next.js
 private: false
-updated_at: ''
-id: null
+updated_at: '2026-07-10T00:54:36+09:00'
+id: 17f17d7e3cee63d1c169
 organization_url_name: null
 slide: false
-ignorePublish: true
+ignorePublish: false
 ---
 **TL;DR**
 
