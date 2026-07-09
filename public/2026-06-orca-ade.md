@@ -1,10 +1,10 @@
 ---
 title: 【Claude Code】AIエージェントを並列実行できるADE「Orca」を触ってみた
 tags:
-  - Git
   - 開発環境
   - AI
   - AIエージェント
+  - AI活用
   - ClaudeCode
 private: false
 updated_at: '2026-06-28T17:32:06+09:00'
