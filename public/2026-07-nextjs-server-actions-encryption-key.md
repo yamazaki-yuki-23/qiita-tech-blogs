@@ -15,7 +15,15 @@ posting_campaign_uuid: null
 agreed_posting_campaign_term: false
 ---
 
-## 公式ドキュメントと実装から読み解く
+**TL;DR**
+
+- `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` は、Server Actionsのクロージャ変数を暗号化するAES-GCM鍵を固定するための環境変数
+- 未設定の場合はビルド時に鍵が自動生成され、`.rscinfo` ファイルに14日間キャッシュされる
+- 実装を追うと、この暗号化キーは**Action IDを生成するSHA-1ハッシュのソルト（hash_salt）と同一の値**だった（公式ドキュメントには未記載）
+- つまり鍵を固定しないと、クロージャの復号失敗だけでなく、**インスタンス間でAction ID自体が一致しない**事態も起こりうる
+- 複数インスタンス運用や複数回ビルドが走る構成では、`openssl rand -base64 32` で生成した鍵をビルド時に渡して固定する
+
+## きっかけ：self-hostingガイドの一文
 
 self-hostingガイドを読んでいると、次のような記述に出会う。
 
@@ -28,13 +36,6 @@ self-hostingガイドを読んでいると、次のような記述に出会う�
 - なぜ複数サーバーインスタンスで固定する必要があるのか
 
 この記事では、公式ドキュメントの記述とNext.js本体の実装（RustコンパイラとTypeScriptランタイム）を突き合わせて、この環境変数の役割を整理する。
-
-**この記事の方針**
-
-- **事実**：公式ドキュメント、またはNext.jsのソースコードから直接確認できる内容
-- **考察**：事実を実運用に当てはめた、筆者の推測を含む内容
-
-を明確に区別して書く。
 
 ソースコードの引用は、2026-07-11時点のvercel/next.js canaryブランチ（コミット`1bd2fd5`、`next`パッケージ`16.3.0-canary.83`）を参照した。
 将来のバージョンでは実装が変わる可能性がある。
@@ -62,7 +63,7 @@ Server Actionを実行
 クライアントは関数そのものではなく、ビルド時に発行された「Action ID」を使ってサーバーにPOSTする。
 サーバーはそのIDから実行すべき関数を特定する。
 
-## Action IDの生成方法（事実）
+## Action IDの生成方法
 
 Action IDは、Next.jsのコンパイラ（Rust実装）が生成する。
 `generate_server_reference_id`関数（`crates/next-custom-transforms/src/transforms/server_actions.rs`）が該当する。
@@ -84,8 +85,8 @@ hasher.update(export_name_bytes);
 Action IDはServer Actionを識別するためのIDであり、後述するクロージャ変数の暗号化とは**別の仕組み**だ。
 公式ドキュメントの`data-security`ガイドでも、この2つは次のように独立した機能として説明されている。
 
-> - **Secure action IDs:** Next.js creates encrypted, non-deterministic IDs to allow the client to reference and call the Server Action.
-> - **Dead code elimination:** Unused Server Actions are removed from client bundle to avoid public access.
+> - **Secure action IDs:** Next.js creates encrypted, non-deterministic IDs to allow the client to reference and call the Server Action. These IDs are periodically recalculated between builds for enhanced security.
+> - **Dead code elimination:** Unused Server Actions (referenced by their IDs) are removed from client bundle to avoid public access.
 
 ## Action IDだけではクロージャ変数を扱えない
 
@@ -109,7 +110,7 @@ Action IDは「どの関数を呼ぶか」しか表現できない。
 この値をそのまま送ると、クライアントに機密情報が漏れる。
 ここで登場するのがクロージャ変数の暗号化だ。
 
-## クロージャ変数は暗号化される（事実）
+## クロージャ変数は暗号化される
 
 公式ドキュメントの`data-security`ガイドには次の記述がある。
 
@@ -124,7 +125,7 @@ IV（初期化ベクトル）は呼び出しごとにランダム生成される
 - [packages/next/src/server/app-render/encryption.ts](https://github.com/vercel/next.js/blob/1bd2fd585aac793ca2589e6f18f17a412fd11005/packages/next/src/server/app-render/encryption.ts)
 - [packages/next/src/server/app-render/encryption-utils.ts](https://github.com/vercel/next.js/blob/1bd2fd585aac793ca2589e6f18f17a412fd11005/packages/next/src/server/app-render/encryption-utils.ts)
 
-## NEXT_SERVER_ACTIONS_ENCRYPTION_KEYの役割（事実）
+## NEXT_SERVER_ACTIONS_ENCRYPTION_KEYの役割
 
 暗号化に使う鍵の生成部分は`encryption-utils-server.ts`の`generateEncryptionKeyBase64`にある。
 
@@ -137,15 +138,15 @@ export async function generateEncryptionKeyBase64({ isBuild, distDir }) {
 }
 ```
 
-- 環境変数`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`が設定されていれば、それを鍵として使う
+- 環境変数`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`が設定されていれば、それを鍵として使う（キャッシュ済みの鍵と食い違う場合も環境変数が優先される）
 - 未設定の場合、AES-GCM 256bitの鍵を新規生成し、`.rscinfo`というキャッシュファイルに書き込む（有効期限14日）
-- ビルドのたびにこのキャッシュが無効化されれば、新しい鍵が生成される
+- キャッシュが残る同一マシンでは、14日以内の再ビルドで同じ鍵が再利用される。CIのようにキャッシュが残らないクリーンビルドでは、ビルドごとに新しい鍵が生成される
 
-公式ドキュメントの「A new private key is generated for each action every time a Next.js application is built」という説明は、この`generateEncryptionKeyBase64`の挙動に対応している。
+公式ドキュメントの「A new private key is generated for each action every time a Next.js application is built」という説明は、この`generateEncryptionKeyBase64`の挙動に対応している。ただし実装を見るかぎり「ビルドのたびに必ず新しい鍵」になるのはキャッシュが効かない場合の話で、`data-security`ガイドの補足にも「created during compilation and are cached for a maximum of 14 days（コンパイル時に生成され、最大14日間キャッシュされる）」とある。
 
 参考：[packages/next/src/server/app-render/encryption-utils-server.ts](https://github.com/vercel/next.js/blob/1bd2fd585aac793ca2589e6f18f17a412fd11005/packages/next/src/server/app-render/encryption-utils-server.ts)
 
-## 【発見】hash_saltの正体はこの暗号化キーそのもの（事実）
+## hash_saltの正体はこの暗号化キーそのもの
 
 ここまで、Action IDの生成とクロージャ変数の暗号化は別の仕組みだと説明した。
 公式ドキュメントもこの2つを独立した機能として書いている。
@@ -169,14 +170,14 @@ webpack経路でも、`packages/next/src/build/swc/options.ts`が`hashSalt: serv
 参考：[crates/next-core/src/next_shared/transforms/server_actions.rs](https://github.com/vercel/next.js/blob/1bd2fd585aac793ca2589e6f18f17a412fd11005/crates/next-core/src/next_shared/transforms/server_actions.rs)
 
 つまり、**Action IDのハッシュソルトと、クロージャ変数の暗号化キーは同一の値**だ。
-公式ドキュメントが「Secure action IDs」を「non-deterministic（非決定的）」「periodically recalculated between builds（ビルドごとに再計算される）」と説明しているのは、ビルドごとに変わる暗号化キーをソルトに使っているからだと、ソースコードを読んで初めて説明がつく。
+公式ドキュメントが「Secure action IDs」を「non-deterministic（非決定的）」「periodically recalculated between builds（ビルド間で定期的に再計算される）」と説明しているのは、ビルドごとに変わりうる暗号化キーをソルトに使っているからだと、ソースコードを読んで初めて説明がつく。Action IDについて公式が補足している「最大14日間キャッシュされる」という日数が、前節で見た暗号化キーのキャッシュ期限（`.rscinfo`の14日）と一致するのも、両者が同じ値を共有していることの傍証になっている。
 
 この事実は、公式ドキュメントには明記されていない。
 日本語の解説記事としては、カミナシ社の技術ブログ「[Next.jsのコンパイラから知るServer Actionsの完全解析](https://kaminashi-developer.hatenablog.jp/entry/nextjs-server-actions)」がAction ID生成のSHA-1ハッシュや`server-reference-manifest.json`の構造まで踏み込んで解説しているが、hash_saltが暗号化キーそのものであるという点には触れていない。
 
-## なぜ複数インスタンスで固定が推奨されるのか（事実＋考察）
+## なぜ複数インスタンスで固定が推奨されるのか
 
-ここまでの事実を踏まえると、`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`を固定しないことの影響は、クロージャ変数の復号だけでなく、Action IDの一致にも及ぶことがわかる。
+ここまでの内容を踏まえると、`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`を固定しないことの影響は、クロージャ変数の復号だけでなく、Action IDの一致にも及ぶことがわかる。
 
 自己ホストガイドは次のように説明している。
 
@@ -190,10 +191,9 @@ webpack経路でも、`packages/next/src/build/swc/options.ts`が`hashSalt: serv
 公式ドキュメントは1のみを明言しており、2は本記事の考察だ。
 ただしソースコード上、`hash_salt`と暗号化キーが同一の値であることは事実として確認できるため、鍵を固定しない限りAction IDもインスタンス間で一致しない、という帰結は妥当だと考える。
 
-## 実運用ではどんな場面で重要になるのか（考察）
+## 実運用ではどんな場面で重要になるのか
 
-以下は公式ドキュメントの「複数インスタンス」「ビルド間でキーを永続化する」という説明を、実運用のシナリオに当てはめた考察だ。
-公式ドキュメントは、これらのシナリオを名指ししているわけではない。
+公式ドキュメントの「複数インスタンス」「ビルド間でキーを永続化する」という説明を実運用のシナリオに当てはめると、次のような場面が該当する。
 
 - **ローリングデプロイ**：新旧のビルド成果物が一時的に共存する
 - **Blue/Greenデプロイ**：環境切り替えの前後で異なるビルドが動く瞬間がある
@@ -237,21 +237,15 @@ CI（GitHub Actions）からSecretsとして渡す例だ。
 
 公式ドキュメントが示しているのは`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=your-generated-key next build`というシンプルなCLI例のみで、Dockerfile/CIへの組み込みは一般的なDockerビルドの知識を組み合わせた応用例だ。
 
-## この記事で扱わないこと
-
-自己ホストの複数インスタンス運用には、`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`以外にも`deploymentId`（アセットのバージョン不整合対策）など関連する設定がある。
-ただし目的が異なる別機能であり、混ぜて説明すると論点がぼやけるため、本記事では扱わない。
-同様に、鍵のローテーション運用（鍵を差し替える際の再ビルド・再デプロイ手順）も本題から外れるため割愛する。
-
 ## まとめ
 
 | 項目 | 内容 |
 |---|---|
 | Action ID | Server Actionを識別するためのID。`hash_salt + file_name + export_name`のSHA-1ハッシュ |
 | クロージャ暗号化 | AES-GCMで暗号化。鍵は`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`または自動生成 |
-| 発見（事実） | Action IDのhash_saltと、クロージャ暗号化の鍵は同一の値 |
+| 今回わかったこと | Action IDのhash_saltと、クロージャ暗号化の鍵は同一の値 |
 | 公式が説明していること | 複数インスタンス・ビルド間で鍵を共有する必要がある |
-| 実運用での想定（考察） | ローリングデプロイ、Blue/Green、Canary、複数ビルドジョブなど |
+| 実運用で影響する場面 | ローリングデプロイ、Blue/Green、Canary、複数ビルドジョブなど |
 
 `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`は、単にクロージャ変数を復号するためだけの設定ではなく、Action IDの一致にも関わる設定だという点が、ソースコードを読んで得られた一番の収穫だった。
 
