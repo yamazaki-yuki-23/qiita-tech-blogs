@@ -111,6 +111,25 @@ CI（GitHub Actions）からSecretsとして渡すならこうなる。
 そしてこの「暗号化まわり」は、実は1つではない。
 ここから先は、それが何なのかを実装とビルド成果物で確認する。
 
+先に全体像を図にすると、こうなる。
+
+```mermaid
+flowchart LR
+    key["NEXT_SERVER_ACTIONS_ENCRYPTION_KEY<br/>または自動生成キー"]
+
+    key --> aes["クロージャ変数の暗号化<br/>AES-GCM"]
+    key --> salt["Action ID生成のhash_salt"]
+
+    salt --> actionId["Action ID<br/>SHA-1(hash_salt + file + export)"]
+    aes --> boundArgs["暗号化された<br/>bound args"]
+
+    actionId --> manifest["server-reference-manifest.json"]
+    key --> manifest
+
+    manifest --> runtime["実行時にAction ID解決<br/>bound args復号"]
+    boundArgs --> runtime
+```
+
 ## Action IDの生成
 
 まず全体の流れを整理する。
@@ -254,6 +273,23 @@ $ NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=$KEY_A npx next build
 
 3回のビルドでmanifestに記録されたAction IDは次のようになった。
 
+```mermaid
+flowchart TB
+    source["同じソースコード"]
+
+    source --> buildA1["鍵Aでビルド"]
+    source --> buildA2["鍵Aで再ビルド"]
+    source --> buildB["鍵Bでビルド"]
+
+    buildA1 --> idA1["Action ID<br/>40e594..."]
+    buildA2 --> idA2["Action ID<br/>40e594..."]
+    buildB --> idB["Action ID<br/>402d95..."]
+
+    idA1 --- same["一致"]
+    idA2 --- same
+    idB --- diff["鍵Bだけ不一致"]
+```
+
 ```text
 鍵A            : 40e594ca6f76e56927cce395e55d2e17aea6b79712
 鍵A（再ビルド）: 40e594ca6f76e56927cce395e55d2e17aea6b79712
@@ -285,6 +321,22 @@ self-hostingガイドは、複数インスタンスでの挙動をこう説明�
 インスタンスAのページが配ったAction IDを別ビルドのインスタンスBが受け取っても、BのmanifestにそのIDは存在しないため、対応するServer Actionを解決できない。
 実際のエラーとしては、ビルドAのページをブラウザで開いたまま、Server ActionのPOST先がビルドBに向く状況を作ると再現できる可能性が高い。
 本記事ではそこまでの再現検証は行っていないが、経路2が成立することはビルド成果物のレベルで裏付けられた。
+
+この流れを図にすると次のようになる。
+
+```mermaid
+sequenceDiagram
+    participant Browser as Browser<br/>ビルドAのページを表示中
+    participant LB as Load Balancer
+    participant ServerA as Server A<br/>ビルドA
+    participant ServerB as Server B<br/>ビルドB
+
+    ServerA-->>Browser: HTMLとAction ID Aを返す
+    Browser->>LB: POST Server Action<br/>Next-Action: Action ID A
+    LB->>ServerB: リクエストを転送
+    ServerB->>ServerB: manifestからAction ID Aを検索
+    ServerB-->>Browser: Failed to find Server Action
+```
 
 冒頭の対処法に戻ると、ビルド時に鍵を固定する設定は、この2つの経路を同時に塞いでいることになる。
 
