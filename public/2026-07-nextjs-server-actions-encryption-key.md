@@ -32,6 +32,9 @@ agreed_posting_campaign_term: false
 
 しかし、この環境変数が何を暗号化しているのか、なぜ固定しないとServer Actionが「見つからなく」なるのかまでは説明されていない。
 
+この話が特に関係するのは、ひとつのビルド成果物を複数コンテナで起動する構成ではなく、同一コミットから複数回ビルドした成果物がロードバランサ配下などで同時に動きうる構成だ。
+たとえば、環境ごとにDockerイメージを作り直す、同じコミットに対して複数のビルドジョブが走る、タスク定義やコンテナごとにビルドが分かれる、といったCI/CDではこの問題を踏みやすい。
+
 この記事では、公式ドキュメント、Next.js本体の実装（RustコンパイラとTypeScriptランタイム）、そして実際のビルド結果の3つを突き合わせて、この環境変数の役割を確かめる。
 先に一つだけ言ってしまうと、この鍵はクロージャ変数の暗号化だけに使われているのではなかった。
 
@@ -65,19 +68,36 @@ $ echo "F4IonZhUuuDR/Qh3vW4jSzskh2h1KKOWt1I2yyfzgUE=" | base64 -d | wc -c
 NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=your-generated-key next build
 ```
 
-Dockerでビルドするなら、ビルド引数として渡す。
+Dockerでビルドするなら、BuildKit secretとして渡す。
 この鍵はビルド成果物に埋め込まれるため、少なくともビルド時には参照できる必要がある。
 一方で、`ENV`として最終イメージに残す必要はない。
 
 ```dockerfile
-ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
-RUN NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=$NEXT_SERVER_ACTIONS_ENCRYPTION_KEY npm run build
+# syntax=docker/dockerfile:1.7
+
+RUN --mount=type=secret,id=next_server_actions_encryption_key \
+  NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="$(cat /run/secrets/next_server_actions_encryption_key)" \
+  npm run build
+```
+
+手元でビルドするなら、ローカルの環境変数をsecretとして渡せる。
+
+```bash
+NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=your-generated-key \
+  docker build \
+  --secret id=next_server_actions_encryption_key,env=NEXT_SERVER_ACTIONS_ENCRYPTION_KEY \
+  .
 ```
 
 CI（GitHub Actions）からSecretsとして渡すならこうなる。
 
 ```yaml
-- run: docker build --build-arg NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${{ secrets.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY }} .
+- run: |
+    docker build \
+      --secret id=next_server_actions_encryption_key,env=NEXT_SERVER_ACTIONS_ENCRYPTION_KEY \
+      .
+  env:
+    NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${{ secrets.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY }}
 ```
 
 固定が必要になるのは、「同じソースコード、または同じServer Actions定義から複数回ビルドされた成果物が同時に動く」構成だ。
@@ -86,10 +106,6 @@ CI（GitHub Actions）からSecretsとして渡すならこうなる。
 - **Blue/Greenデプロイ**：環境切り替えの前後で別ビルドが動く瞬間がある
 - **Canaryリリース**：別ビルドが意図的に共存する
 - **複数ビルドジョブ**：同一コミットに対して複数回ビルドが走るCI/CD構成
-
-ただし、ローリングデプロイやCanaryリリースでは、コード差分そのものによるVersion Skewも別問題として残る。
-Next.jsのself-hostingガイドも、Server FunctionのID不一致をVersion Skewの例として挙げ、`deploymentId`の設定を案内している。
-この記事で扱うのは、そのうち「同じAction定義でも、ビルドごとの鍵が違うことでIDや復号が一致しなくなる」問題だ。
 
 鍵を固定しないと、ビルドキャッシュが共有されない環境ではビルドごとに異なる鍵が生成され、インスタンス間で暗号化まわりの整合性が取れなくなる。
 そしてこの「暗号化まわり」は、実は1つではない。
@@ -267,11 +283,10 @@ self-hostingガイドは、複数インスタンスでの挙動をこう説明�
 この一文で直接説明しているのは1だけだ。
 しかし2の前提となる「鍵が違えばAction IDが変わる」ことは、前節の実ビルドで確認できた。
 インスタンスAのページが配ったAction IDを別ビルドのインスタンスBが受け取っても、BのmanifestにそのIDは存在しないため、対応するServer Actionを解決できない。
-複数インスタンスをまたいだエラーの再現までは行っていないが、経路2が成立することはビルド成果物のレベルで裏付けられた。
+実際のエラーとしては、ビルドAのページをブラウザで開いたまま、Server ActionのPOST先がビルドBに向く状況を作ると再現できる可能性が高い。
+本記事ではそこまでの再現検証は行っていないが、経路2が成立することはビルド成果物のレベルで裏付けられた。
 
 冒頭の対処法に戻ると、ビルド時に鍵を固定する設定は、この2つの経路を同時に塞いでいることになる。
-ただし、Server Actionの追加・削除・移動などでmanifest自体が変わる場合は、鍵の固定だけではVersion Skewを解消できない。
-その場合は、同じビルド成果物を複数コンテナで起動する、`deploymentId`を使う、といったself-hostingガイド側の対策も必要になる。
 
 ## まとめ
 
@@ -285,7 +300,6 @@ self-hostingガイドは、複数インスタンスでの挙動をこう説明�
 
 `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`は、クロージャ変数を復号するためだけの設定ではなく、Action IDの一致にも関わる設定だった。
 セルフホストで複数インスタンスを動かしている、あるいはCIで同一コミットを複数回ビルドしているなら、`next build`に鍵を渡しているかを一度確認してほしい。
-ローリングデプロイで新旧コードが共存する構成では、あわせてVersion Skew対策も確認したほうがよい。
 
 ## 参考資料
 
