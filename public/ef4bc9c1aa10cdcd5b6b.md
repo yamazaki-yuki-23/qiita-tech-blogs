@@ -9,6 +9,8 @@ id: ef4bc9c1aa10cdcd5b6b
 organization_url_name: null
 slide: false
 ignorePublish: false
+posting_campaign_uuid: null
+agreed_posting_campaign_term: false
 ---
 #前提
 既にRailsのアプリ開発するための環境構築は完了している

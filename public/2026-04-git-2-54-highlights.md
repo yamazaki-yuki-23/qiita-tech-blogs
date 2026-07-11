@@ -10,6 +10,8 @@ id: 71c3da720bb7b717adb4
 organization_url_name: null
 slide: false
 ignorePublish: false
+posting_campaign_uuid: null
+agreed_posting_campaign_term: false
 ---
 
 **TL;DR**: Git 2.54では`git history`という新コマンドが追加され、コミットメッセージの修正や分割が以前より手軽になった。gitconfigにhookを書ける機能、`git add -p`の操作改善、`git status`の比較拡張も加わっている。

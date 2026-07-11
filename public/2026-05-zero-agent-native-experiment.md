@@ -12,6 +12,8 @@ id: 242ab7921f2bc8331e5b
 organization_url_name: null
 slide: false
 ignorePublish: false
+posting_campaign_uuid: null
+agreed_posting_campaign_term: false
 ---
 
 **TL;DR**
