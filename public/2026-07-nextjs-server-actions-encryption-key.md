@@ -7,7 +7,7 @@ tags:
   - Next.js
   - ServerActions
 private: false
-updated_at: '2026-07-12T13:05:46+09:00'
+updated_at: '2026-07-12T13:10:17+09:00'
 id: 1e8c03049c8d6c117858
 organization_url_name: null
 slide: false
