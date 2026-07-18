@@ -7,15 +7,14 @@ tags:
   - AI
   - 業務効率化
 private: false
-updated_at: ''
-id: null
+updated_at: '2026-07-18T11:41:47+09:00'
+id: c066a478a9f163add92b
 organization_url_name: null
 slide: false
-ignorePublish: true
+ignorePublish: false
 posting_campaign_uuid: null
 agreed_posting_campaign_term: false
 ---
-
 ## はじめに
 
 毎月の集計表づくりやフォーマットの整え直しなど、定型的なExcel作業が日常的に発生していて、正直ずっと面倒だと思っていました。コードはClaude Codeに任せられるのに、Excelだけは自分の手で編集している。この状況を解消できそうなツールを見つけたので、実際に試した結果をまとめます。
@@ -251,7 +250,8 @@ officecli view sales.xlsx screenshot
 # => 一時ディレクトリにPNGのパスが出力される
 ```
 
-<!-- TODO: assets/2026-07-officecli-claude-code-excel/sales-screenshot-before.png をQiitaにアップロードしてここに貼る（列幅修正前） -->
+![sales-screenshot-before.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/554111/6494252f-6038-4752-a5ef-25a1229c6fbe.png)
+
 
 *（列幅修正前）*
 
@@ -271,7 +271,8 @@ officecli batch sales.xlsx --commands '[
 ]'
 ```
 
-<!-- TODO: assets/2026-07-officecli-claude-code-excel/sales-screenshot-after.png をQiitaにアップロードしてここに貼る（列幅修正後） -->
+![sales-screenshot-after.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/554111/dc87eede-e77c-4a5b-9d61-0f04d0af517f.png)
+
 
 *（列幅修正後）*
 
