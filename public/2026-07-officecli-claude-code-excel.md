@@ -339,5 +339,4 @@ Error: Unknown mode: png. Available: text, annotated, outline, stats, issues, ht
 ## 参考
 
 - [iOfficeAI/OfficeCLI - GitHub](https://github.com/iOfficeAI/OfficeCLI)
-- [日本語README](https://github.com/iOfficeAI/OfficeCLI/blob/main/README_ja.md)
 - [officecli for Claude Code - 公式ドキュメント](https://officecli.io/officecli/claude-code)
