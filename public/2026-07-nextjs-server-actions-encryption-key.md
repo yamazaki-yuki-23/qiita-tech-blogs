@@ -1,13 +1,13 @@
 ---
 title: Server Actionsを使うなら知っておきたい NEXT_SERVER_ACTIONS_ENCRYPTION_KEY の仕組みと必要性
 tags:
-  - Security
-  - TypeScript
-  - React
   - Next.js
+  - React
+  - Security
   - ServerActions
+  - TypeScript
 private: false
-updated_at: '2026-07-12T13:10:17+09:00'
+updated_at: '2026-07-18T11:39:13+09:00'
 id: 1e8c03049c8d6c117858
 organization_url_name: null
 slide: false
