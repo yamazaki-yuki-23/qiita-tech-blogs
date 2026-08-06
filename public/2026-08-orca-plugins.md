@@ -19,7 +19,7 @@ agreed_posting_campaign_term: false
 
 AI エージェント向け開発環境「[Orca](https://www.onorca.dev/)」に、v1.4.162 でプラグイン機能とマーケットプレイスが追加されました。
 
-調べてみると、Orca のマーケットプレイスは VS Code の拡張機能ストアとは仕組みが異なりました。プラグイン本体を保管する場所ではなく、**各プラグインの Git リポジトリを案内する一覧**です。
+調べてみると、Orca のマーケットプレイスは VS Code の拡張機能ストアとは仕組みが異なりました。プラグイン本体を保管する場所ではなく、各プラグインの Git リポジトリを案内する一覧です。
 
 > **注意:** プラグイン機能は experimental です。以下の内容は、2026年8月時点の macOS 版で確認した結果です。バージョンによってファイル形式や画面表示が変わる可能性があります。
 
@@ -75,14 +75,14 @@ Orca は起動時に公式マーケットプレイスの一覧を取得し、PC 
 
 | プラグイン | カテゴリ | 入れると何が変わるか |
 |---|---|---|
-| `stablyai.orca-midnight-theme` | themes | 画面が暗いテーマになる。長時間の作業向け |
-| `stablyai.orca-nord-theme` | themes | 画面が寒色でコントラストを抑えたテーマになる |
-| `stablyai.orca-minimal-icons` | icons | ファイルのアイコンが単色の小さめのものに変わる |
-| `stablyai.orca-solarized-terminal` | terminal-themes | ターミナルの配色が Solarized Dark になる |
-| `stablyai.orca-navigation-shortcuts` | keybindings | タスクや検索の画面をキー操作で開けるようになる |
-| `stablyai.orca-workflow-skills` | skills | 計画やレビューをエージェントに任せるときの手順書が増える |
-| `stablyai.orca-multipass-recipes` | vm-recipes | 仮想マシンに関する設定一式 |
-| `stablyai.orca-portuguese` | languages | 画面表示がブラジルポルトガル語になる |
+| `stablyai.orca-midnight-theme` | themes | 暗めの配色テーマが追加される |
+| `stablyai.orca-nord-theme` | themes | 寒色系でコントラストを抑えたテーマが追加される |
+| `stablyai.orca-minimal-icons` | icons | 単色で小さめのファイルアイコンが追加される |
+| `stablyai.orca-solarized-terminal` | terminal-themes | ターミナルに Solarized Dark の配色が追加される |
+| `stablyai.orca-navigation-shortcuts` | keybindings | タスク画面や検索を開くキーボードショートカットが追加される |
+| `stablyai.orca-workflow-skills` | skills | 計画やレビューに使うエージェント向けスキルが追加される |
+| `stablyai.orca-multipass-recipes` | vm-recipes | 仮想マシンを作るための VM レシピが追加される |
+| `stablyai.orca-portuguese` | languages | 表示言語をポルトガル語（ブラジル）に切り替えられる |
 
 8件のうち4件は、テーマ、アイコン、ターミナルの配色といった見た目を変えるプラグインです。
 
@@ -94,7 +94,7 @@ Orca は起動時に公式マーケットプレイスの一覧を取得し、PC 
 
 `official` は8件すべてに付いていました。
 
-一方、changelog が挙げていた「パネル」と「ワーカー」に該当するプラグインは、この8件に含まれていません。現時点の公式マーケットプレイスには、設定や素材を追加するプラグインが中心に並んでいます。
+一方、changelog が挙げていた「パネル」と「ワーカー」に該当するプラグインは、この8件に含まれていません。現時点では、テーマやアイコンなどを追加するプラグインが並んでいます。
 
 ## マーケットプレイスには8件あるのに、画面には3件しか表示されない
 
@@ -110,7 +110,7 @@ Orca は起動時に公式マーケットプレイスの一覧を取得し、PC 
 
 表示されない5件は、テーマ2件、アイコン1件、ターミナルの配色1件、エージェント向けの手順書1件です。見た目を変える4件がすべて含まれます。
 
-検索や絞り込みは使っていません。リポジトリにも8件登録されています。Orca v1.4.173 が未対応の種類を除外している可能性はありますが、公式の説明は見つかっていません。確認できた事実は、**「一覧は8件、画面は3件」**という点までです。
+検索や絞り込みは使っていません。リポジトリにも8件登録されています。Orca v1.4.173 が未対応の種類を除外している可能性はありますが、公式の説明は見つかっていません。確認できたのは、「一覧は8件、画面は3件」という事実だけです。
 
 ### 1件は Orca に最初から入っている
 
@@ -228,7 +228,7 @@ orca-marketplace.json
 
 ## プラグインの中身は VS Code の拡張によく似ている
 
-各プラグインのルートには `orca-plugin.json` があります。これは、プラグインの名前、対応バージョン、追加する機能などを Orca に伝える**マニフェスト**です。
+各プラグインのルートには `orca-plugin.json` があります。これは、プラグインの名前、対応バージョン、追加する機能などを Orca に伝えるマニフェストです。
 
 インストール済みの `Orca Navigation Shortcuts` を例に見てみます。
 
