@@ -1,17 +1,17 @@
 ---
 title: Orcaに追加されたプラグイン機能とマーケットプレイスを調べてみた
 tags:
-  - Orca
+  - ORCA
   - ClaudeCode
   - AI
   - 開発環境
   - プラグイン
 private: false
-updated_at: ''
-id: null
+updated_at: '2026-08-07T09:45:46+09:00'
+id: fb17df6eaa99cb12b781
 organization_url_name: null
 slide: false
-ignorePublish: true
+ignorePublish: false
 posting_campaign_uuid: null
 agreed_posting_campaign_term: false
 ---
