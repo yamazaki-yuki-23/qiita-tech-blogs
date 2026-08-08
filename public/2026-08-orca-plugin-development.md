@@ -1,5 +1,5 @@
 ---
-title: Orcaプラグインの作り方：サイドバーで動くパネルを自作してみた
+title: AIエージェント開発環境「Orca」のプラグインを自作してみた
 tags:
   - ORCA
   - プラグイン
@@ -94,7 +94,7 @@ my-plugin/
 | 項目 | 内容 |
 |---|---|
 | `manifestVersion` | 現在は `1` 固定 |
-| `id` | プラグインの識別子。あとで説明する制約あり |
+| `id` | プラグインの識別子 ※命名に制約あり（後述） |
 | `publisher` | 発行者の識別子。`id` と組み合わせて `publisher.id` がプラグインのキーになる |
 | `name` | 設定画面に表示される名前 |
 | `version` | セマンティックバージョン |
@@ -110,9 +110,7 @@ my-plugin/
 
 `id` が `orca-` で始まる場合、あるいは `publisher` が `stablyai` の場合、そのプラグインは Orca の予約識別子として扱われます。予約識別子はローカルフォルダからのインストールが拒否されるため、識別子を変えない限りインストールできません。
 
-厄介なのは、このときのエラーメッセージが「プラグインのインストールに失敗しました。ソースを確認して再試行してください。」という汎用の文言になることです。原因が識別子にあるとは表示されません。
-
-`orca-notes` ではなく `notes` にする。それだけです。
+厄介なのは、このインストールに失敗したときのエラーメッセージが「プラグインのインストールに失敗しました。ソースを確認して再試行してください。」という汎用の文言になることです。原因が識別子にあるとは表示されません。
 
 ### engines.orca は `>=x.y.z` の形式のみ
 
@@ -152,7 +150,7 @@ npm の感覚で `^1.4.0` と書くと弾かれます。
 "capabilities": [{ "kind": "workspace:read" }]  // OK
 ```
 
-指定できる `kind` は 7 種類です。
+指定できる `kind` は 7 種類です。表の右列は、権限ダイアログに実際に表示される文言をそのまま載せています。
 
 | kind | 権限ダイアログの表示 |
 |---|---|
@@ -172,9 +170,9 @@ npm の感覚で `^1.4.0` と書くと弾かれます。
 
 ## 3. パネルの中身を書く
 
-### entry は HTML の断片
+### entry は `<body>` から書く
 
-ここが最初に戸惑うところです。`entry` に指定するファイルは、完結した HTML ドキュメントではなく**断片**です。
+ここが最初に戸惑うところです。`entry` に指定するファイルには、完結した HTML ドキュメントではなく、**`<body>` 以降だけ**を書きます。
 
 Orca 側が次のようなシェルを組み立て、その末尾に指定したファイルの中身をそのまま連結します。
 
@@ -190,7 +188,7 @@ Orca 側が次のようなシェルを組み立て、その末尾に指定した
 <!-- ここに entry の中身が入る -->
 ```
 
-そのため、`entry` に `<!doctype html>` や `<head>` を書くと二重になります。`<body>` から始めます。
+そのため、`entry` に `<!doctype html>` や `<head>` を書くと二重になります。
 
 ```html:panel/index.html
 <body>
@@ -229,17 +227,17 @@ base-uri 'none'; form-action 'none'
 
 **2. 状態を保存できない**
 
-設定や記録を次に開いたときに残したいところですが、これができません。`allow-same-origin` が付いていないため、パネルのオリジンは opaque になります。`localStorage` にアクセスしようとすると例外が投げられます。加えて `srcDoc` はマウントのたびにドキュメントを作り直すので、サイドバーを閉じて開くと変数の中身は消えます。
+スコアや設定を保存して、次に開いたときに引き継ぐことはできません。`allow-same-origin` が付いていないため、パネルのオリジンは opaque になります。`localStorage` にアクセスしようとすると例外が投げられます。加えて `srcDoc` はマウントのたびにドキュメントを作り直すので、サイドバーを閉じて開くと変数の中身は消えます。
 
-プラグイン API には `storage.get` / `storage.set` がありますが、これらはパネルからは呼べません（後述）。パネルだけで完結するプラグインは、原理的に状態を持てないと思っておくのが安全です。
+プラグイン API には `storage.get` / `storage.set` がありますが、これらはパネルからは呼べません（後述）。パネルだけで完結するプラグインは、現在は状態を持てません。
 
 **3. 音声ファイルは読み込めない**
 
 CSP に `media-src` の指定がないので `default-src 'none'` に落ち、`<audio>` からの読み込みはブロックされます。ただし Web Audio API の `AudioContext` は外部リソースを取得しないため、波形を生成する形なら音を鳴らせます。
 
 ```js
-var audio = new AudioContext();   // ユーザー操作のあとで生成する
-var osc = audio.createOscillator();
+const audio = new AudioContext();   // ユーザー操作のあとで生成する
+const osc = audio.createOscillator();
 osc.frequency.value = 880;
 osc.connect(audio.destination);
 osc.start();
@@ -278,7 +276,7 @@ osc.stop(audio.currentTime + 0.08);
 }
 ```
 
-逆に、色を直接書くとテーマが変わったときに浮きます。
+逆に、色を直接書くと、テーマを切り替えたときにパネルだけ配色が変わらず、周囲と合わなくなります。
 
 ### ホストの機能を呼ぶ
 
@@ -311,26 +309,27 @@ osc.stop(audio.currentTime + 0.08);
 毎回書くのは面倒なので、Promise で包むヘルパーを用意しておくと楽です。
 
 ```js
-var seq = 0, pending = {};
+let seq = 0;
+const pending = {};
 
-window.addEventListener('message', function (event) {
-  var data = event.data;
+window.addEventListener('message', (event) => {
+  const data = event.data;
   if (!data || data.type !== 'orca-panel-action-result') return;
-  var resolve = pending[data.requestId];
+  const resolve = pending[data.requestId];
   if (!resolve) return;
   delete pending[data.requestId];
   resolve(data);
 });
 
-function callHost(action, params) {
-  return new Promise(function (resolve) {
-    var requestId = 'req-' + ++seq;
+function callHost(action, params = {}) {
+  return new Promise((resolve) => {
+    const requestId = 'req-' + ++seq;
     pending[requestId] = resolve;
     window.parent.postMessage({
       type: 'orca-panel-action',
-      requestId: requestId,
-      action: action,
-      params: params || {}
+      requestId,
+      action,
+      params
     }, '*');
   });
 }
@@ -339,9 +338,9 @@ function callHost(action, params) {
 使い方はこうなります。
 
 ```js
-callHost('workspace.readContext').then(function (res) {
+callHost('workspace.readContext').then((res) => {
   if (!res.ok) return;
-  var branch = res.value.branch;   // "refs/heads/main"
+  const branch = res.value.branch;   // "refs/heads/main"
   document.getElementById('branch').textContent =
     branch.replace(/^refs\/heads\//, '');
 });
@@ -351,7 +350,7 @@ callHost('workspace.readContext').then(function (res) {
 
 #### パネルから呼べるのは 3 つだけ
 
-プラグイン API には 13 のメソッドがありますが、パネルから呼べるのは `panel: true` が付いた 3 つだけです。
+Orca のアプリケーションバンドル内にある API 定義を読むと、プラグイン API のメソッドは 13 個定義されています。各メソッドは、パネルから呼び出せるかどうかを示す `panel` フラグを持っていて、これが `true` なのは次の 3 つだけです。
 
 | メソッド | 必要な capability | パネルから |
 |---|---|---|
@@ -365,15 +364,15 @@ callHost('workspace.readContext').then(function (res) {
 
 保存系がすべて `panel: false` なのは意図的な設計だと思われます。サンドボックス内のコードにディスクへの書き込み経路を渡さない、ということでしょう。
 
-なお `notifications.show` で通知を出すと、タイトルには必ず `publisher.id: ` が前置されます。`title` に `Done` を渡すと、実際の通知は `your-name.my-plugin: Done` になります。
+なお `notifications.show` で通知を出すと、タイトルの先頭に自動で `publisher.id: ` が付きます。`title` に `Done` を渡すと、実際の通知は `your-name.my-plugin: Done` になります。
 
 ## 4. Orca に読み込ませる
 
-ファイルが 2 つ揃ったら、Orca に読み込ませます。開発中は「開発」セクションからフォルダを直接指定するのが手軽です。プラグインのコピーが作られないので、ファイルを直したらプラグインを無効化して有効化し直せば反映されます。
+ファイルが 2 つ揃ったら、Orca にインストールします。
 
 1. **設定 → プラグイン** を開く
 2. 「プラグインシステム」をオンにする
-3. 一番下の「開発」セクションで、プラグインフォルダのフルパスを入力して「パスを追加」
+3. 「プラグインをインストール」を押し、「ローカルフォルダー」にプラグインフォルダのフルパスを入力して「インストール」
 4. 一覧に追加されたプラグインの「レビューして有効にする」を押す
 5. 権限ダイアログの内容を確認して「プラグインを有効にする」
 
@@ -381,16 +380,21 @@ callHost('workspace.readContext').then(function (res) {
 
 有効にすると、サイドバーに `contributes.panels[].title` の名前でパネルが現れます。
 
+インストール時に、プラグインのファイルは Orca の管理下にコピーされます。そのため、元のフォルダを修正しても自動では反映されません。修正のたびにインストールし直す必要があります。
+
 うまく動かないときは、プラグイン一覧の「…」から「ログを表示」を選ぶと直近 200 行が読めます。マニフェストの検証エラーもここに出ます。
 
-## 5. インストールできる形にする
+## 5. 他の人に配る
 
-他の人に配る、あるいは自分の環境に正式に入れる場合は「プラグインをインストール」を使います。こちらはプラグインが Orca の管理下にコピーされます。
+「プラグインをインストール」には「ローカルフォルダー」のほかに「Git URL」のタブがあります。リポジトリを公開しておけば、URL だけで他の人の Orca にもインストールしてもらえます。
 
-- **ローカルフォルダー** — `orca-plugin.json` があるフォルダのフルパスを入力
-- **Git URL** — リポジトリ URL に `#ref` を付けて入力（例: `https://github.com/you/my-plugin#v0.1.0`）
+今回作ったブロック崩しもこの形で公開してあります。「Git URL」タブに次の URL を貼って「インストール」を押すだけです。
 
-Git URL のほうは `#ref` が必須です。インストールを固定するための指定なので、タグかコミットハッシュを使います。バージョンごとにタグを切っておくのが素直です。
+```
+https://github.com/yamazaki-yuki-23/orca-breakout-panel#v0.1.1
+```
+
+URL 末尾の `#ref` は必須です。インストールを固定するための指定なので、タグかコミットハッシュを使います。バージョンごとにタグを切っておくのが素直です。
 
 インストールにはいくつか制限があります。
 
@@ -448,7 +452,7 @@ export function deactivate() {}
 
 ここまでが作り方です。ここからは、自分がこの手順で何を作ったかという話を少しだけ。
 
-題材は冒頭に載せたブロック崩しです。サイドバーの幅にちょうど収まるサイズで、クリックで開始、マウスでパドルを動かして、ブロックを崩すたびに音が鳴ります。実用性はありません。ただ、パネルという仕組みを一周させるには都合のいい題材でした。
+題材は冒頭に載せたブロック崩しです。サイドバーの幅にちょうど収まるサイズで、クリックで開始、マウスでパドルを動かして、ブロックを崩すたびに音が鳴ります。実用性はありません。パネルを使ったプラグイン開発を手軽に体験できるという理由で選びました。作りながら確認したかったのは次の 3 つです。
 
 - Canvas の描画と `requestAnimationFrame` が iframe の中で普通に動くか
 - 効果音を鳴らす方法があるか
@@ -458,16 +462,15 @@ export function deactivate() {}
 
 ![ゲームオーバー後のパネル。SCORE 700、LIFE 0 と表示され、下部に「test3 / ゲームオーバー 700点 — クリックでもう一度」と出ている](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-08-orca-plugin-development/breakout-result.png)
 
-先頭の `test3` が、そのとき開いていたワークツリーのブランチ名です。ゲームに必要な機能ではありませんが、パネルとホストの往復を実際に通しておきたかったので入れました。
+先頭の `test3` が、そのとき開いていたワークツリーのブランチ名です。ゲームに必要な機能ではありませんが、パネルから Orca の API を呼ぶ部分を実際に動かして確かめたかったので入れました。
 
 作った順序はだいたいこうです。
 
-1. `orca-plugin.json` だけ書いて「開発」に登録し、空のパネルが出ることを確認する
-2. `callHost` のヘルパーを書いて、`workspace.readContext` の戻り値をパネルに表示する
-3. そこにゲーム本体を足す
-4. 音とスコア表示を調整する
+1. マニフェストとほぼ空の `index.html` だけの最小構成でインストールし、エラーなくパネルが表示されることを確認する
+2. パネルの機能を実装する（今回はブロック崩し）
+3. インストールし直して、期待どおり動くことを確認する
 
-1 と 2 を先に通しておくと、あとはブラウザで書くのと変わりません。逆にここを飛ばして中身から書くと、動かないときにマニフェストの問題なのかコードの問題なのか切り分けられなくなります。
+最初に 1 を通しておくと、以降はブラウザで動く HTML を書くのと変わりません。動かないときにマニフェストの問題なのかコードの問題なのか切り分けやすくなるので、慣れないうちは 1 を通しておくことをお勧めします。
 
 コードは以下に置いてあります。パネルの実装例として、気になる方は参考にしてみてください。
 
