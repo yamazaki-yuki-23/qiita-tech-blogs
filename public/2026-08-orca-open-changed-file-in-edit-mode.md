@@ -1,15 +1,16 @@
 ---
 title: OrcaでPR作成後の変更ファイルを編集する方法
 tags:
-  - macOS
-  - Git
   - tips
+  - ADE
+  - エージェント
+  - AI
 private: false
-updated_at: '2026-08-13T01:15:00+09:00'
-id: 29717e5e1b00b51ef7f9
+updated_at: '2026-08-13T10:10:59+09:00'
+id: ffa1fb43e34b3c8f5c99
 organization_url_name: null
 slide: false
-ignorePublish: true
+ignorePublish: false
 posting_campaign_uuid: null
 agreed_posting_campaign_term: false
 ---
