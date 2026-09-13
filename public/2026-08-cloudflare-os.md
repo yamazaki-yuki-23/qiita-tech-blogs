@@ -6,7 +6,7 @@ tags:
   - AI
   - Security
 private: false
-updated_at: '2026-08-14T15:09:06+09:00'
+updated_at: '2026-08-14T15:14:48+09:00'
 id: 037dddc0c4ca79e26156
 organization_url_name: null
 slide: false
@@ -14,6 +14,8 @@ ignorePublish: false
 posting_campaign_uuid: null
 agreed_posting_campaign_term: false
 ---
+
+## はじめに
 
 2026年8月10日、Cloudflareから「Cloudflare OS」がオープンソースとして公開されました。
 
