@@ -42,13 +42,12 @@
 
   <rect x="40" y="340" width="250" height="64" rx="10" fill="#fff" stroke="#c62828" stroke-width="2" stroke-dasharray="6 4"/>
   <text x="165" y="367" font-size="15" text-anchor="middle" fill="#333">ホストが</text>
-  <text x="165" y="390" font-size="15" text-anchor="middle" fill="#333">「アクセス権を更新」を出す</text>
+  <text x="165" y="390" font-size="15" text-anchor="middle" fill="#333">サインインを求める</text>
   <line x1="370" y1="372" x2="294" y2="372" stroke="#c62828" stroke-width="2" marker-end="url(#ar)"/>
 
   <rect x="40" y="190" width="250" height="84" rx="10" fill="#fff" stroke="#c62828" stroke-width="2" stroke-dasharray="6 4"/>
-  <text x="165" y="218" font-size="15" text-anchor="middle" fill="#333">利用者が許可して</text>
-  <text x="165" y="241" font-size="15" text-anchor="middle" fill="#333">Google でサインイン</text>
-  <text x="165" y="263" font-size="12" text-anchor="middle" fill="#666">sub は鍵で HMAC して保存</text>
+  <text x="165" y="226" font-size="15" text-anchor="middle" fill="#333">利用者が許可して</text>
+  <text x="165" y="250" font-size="15" text-anchor="middle" fill="#333">Google でサインイン</text>
   <line x1="165" y1="340" x2="165" y2="278" stroke="#c62828" stroke-width="2" marker-end="url(#ar)"/>
 
   <line x1="165" y1="190" x2="165" y2="108" stroke="#1565c0" stroke-width="2" marker-end="url(#a)"/>
