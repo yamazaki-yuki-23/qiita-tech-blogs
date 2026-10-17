@@ -17,7 +17,7 @@
   <text x="165" y="92" font-size="14" text-anchor="middle" fill="#0d47a1">ChatGPT など</text>
 
   <rect x="370" y="40" width="250" height="64" rx="10" fill="#f5f5f5" stroke="#424242" stroke-width="2"/>
-  <text x="495" y="68" font-size="18" font-weight="bold" text-anchor="middle" fill="#212121">Worker の fetch</text>
+  <text x="495" y="68" font-size="18" font-weight="bold" text-anchor="middle" fill="#212121">Worker</text>
   <text x="495" y="92" font-size="14" text-anchor="middle" fill="#424242">/mcp で受ける</text>
 
   <line x1="290" y1="72" x2="366" y2="72" stroke="#555" stroke-width="2" marker-end="url(#a)"/>
