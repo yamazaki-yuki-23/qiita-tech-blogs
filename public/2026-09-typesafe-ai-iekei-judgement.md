@@ -1,13 +1,13 @@
 ---
-title: 「家系ラーメンの定義」を正規表現で書くのをやめて、TypeSafe AI に判定させた
+title: 「家系ラーメンの定義」を正規表現で書くのをやめて、TypeSafe AI「Jev」 に判定させた
 tags:
   - AI
   - TypeSafe
   - JavaScript
   - MCP
-  - OpenStreetMap
+  - Jev
 private: false
-updated_at: '2026-09-22T11:02:17+09:00'
+updated_at: '2026-09-22T16:52:35+09:00'
 id: cc7324a8c61e30bc8436
 organization_url_name: null
 slide: false
