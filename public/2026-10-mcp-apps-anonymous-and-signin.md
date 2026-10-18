@@ -7,21 +7,21 @@ tags:
   - ChatGPT
   - MCPApps
 private: false
-updated_at: ''
-id: null
+updated_at: '2026-10-18T09:59:05+09:00'
+id: 3f9a5125c06d3af5c855
 organization_url_name: null
 slide: false
-ignorePublish: true
+ignorePublish: false
 posting_campaign_uuid: null
+agreed_posting_campaign_term: false
 ---
-
 ## はじめに
 
 家系ラーメンの店を探す MCP Apps を作っています。アプリを作ったときのことは別の記事に書いたので、詳細は[こちら](https://qiita.com/tamakiiii/items/5cc4fd0b49a644a24e23)をご覧ください。
 
 店を探すほかに、行った店を登録しておくこともできます。店を探すのは誰でも匿名でできますが、登録した店は利用者ごとに保存するので、誰が登録したかを見分ける必要があります。そこで、登録するときだけ Google でサインインしてもらう作りにしました。
 
-この記事では、**匿名で使える tool とサインインが要る tool を 1 つの MCP サーバーに置く**方法を書きました。前半で仕組みを、後半で実装中に問題になった 3 点を説明しています。
+この記事では、**匿名で使える tool とサインインが要る tool を 1 つの MCP サーバーに置く**方法を書きました。前半は仕組み、後半は実装中に起きた問題 3 点の説明です。
 
 サーバーは Cloudflare Workers で動かしています。MCP の部分は公式の SDK（`@modelcontextprotocol/server`）、サインインの部分は Cloudflare のライブラリ（`@cloudflare/workers-oauth-provider` 1.1.0）を使いました。
 
@@ -87,7 +87,7 @@ Worker
                   ↓ tool の処理を動かし、結果を応答に入れて返す（200）
 ```
 
-SDK に渡したあとの応答は SDK が作るので、tool の処理の中から応答を 401 に変えることはできません。tool の処理がエラーを返したときも、応答は 200 のままです。そのため 401 は、SDK に渡す前に Worker が返します。
+SDK に渡したあとの応答は SDK が作るので、tool の処理の中から応答を 401 に変えることはできません。tool の処理がエラーを返したときも、応答は 200 のままです。そのため 401 は、SDK へ渡す前に Worker が返します。
 
 Worker はホストからの呼び出しを次の順で処理しています。
 
@@ -144,7 +144,7 @@ const securitySchemes = member
 
 ### 1. `OAuthProvider` は使えなかった
 
-Cloudflare のライブラリでは、`OAuthProvider` クラスを使って MCP サーバーへのすべての呼び出しにサインインを求めるのが定番の使い方です。ところが、この使い方では **トークンが付いていない呼び出しは、tool の処理に届く前にすべて 401** になります。ライブラリの中は次のとおりで、トークンが見つからなければその場で 401 を返します。
+Cloudflare のライブラリでは、`OAuthProvider` クラスを使って MCP サーバーへのすべての呼び出しにサインインを求めるのが定番の使い方です。ところが、この使い方では **トークンが付いていない呼び出しは tool の処理まで届かず、すべて 401** になります。ライブラリの中は次のとおりで、トークンが見つからなければその場で 401 を返します。
 
 ```js
 const bearerMatch = authHeader ? /^Bearer[\t ]+([^\s,]+)$/i.exec(authHeader) : null;
@@ -153,7 +153,7 @@ if (!bearerMatch) return new Response(null, { status: 401, ... });
 
 これでは、匿名で使える検索の tool まで 401 になります。
 
-そこで、同じライブラリにある `OAuthAuthorizationServer` クラスに切り替えました。2 つのクラスの違いは次のとおりです。
+そこで、同じライブラリの `OAuthAuthorizationServer` クラスへ切り替えました。2 つのクラスの違いは次のとおりです。
 
 | クラス | ライブラリが処理するもの | トークンが無い tool の呼び出し |
 | --- | --- | --- |
@@ -188,7 +188,7 @@ return Response.json({
 });
 ```
 
-ホストによっては、メタデータの URL の末尾に `/mcp` を付けた URL（`/.well-known/oauth-protected-resource/mcp`）を先に見に来ます。そのため、両方の URL で同じメタデータを返します。
+ホストによっては、メタデータの URL の末尾に `/mcp` を付けた URL（`/.well-known/oauth-protected-resource/mcp`）を先に取得します。そのため、両方の URL で同じメタデータを返します。
 
 ### 3. 画面から呼んだときはサインインが始まらない
 
@@ -216,7 +216,7 @@ ChatGPT 以外のツール（Claude など）での動作は確認できてお�
 
 ## まとめ
 
-匿名で使える tool とサインインが要る tool を 1 つの MCP サーバーに置くときの要点は、401 を tool の中ではなく、tool の処理に渡す前に返すことです。そのうえで、401 で URL を示す保護リソースのメタデータは自分で返す必要がありました。
+匿名で使える tool とサインインが要る tool を 1 つの MCP サーバーに置くときの要点は、401 を tool の中ではなく、tool の処理へ渡す手前で返すことです。そのうえで、401 で URL を示す保護リソースのメタデータは自分で返す必要がありました。
 
 アプリはこちらです：https://iekeiramen.com
 
