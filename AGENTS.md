@@ -1,11 +1,87 @@
 # AGENTS.md
 
+Claude Code と Codex に共通するプロジェクト指示は、このファイルで管理する。共通ルールを変更するときは、このファイルを編集し、`CLAUDE.md` に複製しない。
+
+Codex はこのファイルを直接読み込む。Claude Code は `CLAUDE.md` の `@AGENTS.md` を通じて読み込む。
+
 ## 基本方針
 
 - チャットの応答は日本語で行う。
 - このリポジトリの主な成果物は、`public/` に置く Qiita 向けの技術記事である。
 - ユーザーが記事の「レビュー」「添削」「改善」を依頼した場合は、指摘だけで終わらせず、指定された記事へ修正を反映する。
 - 著者の意図や文体は残す。ただし、事実誤認、誤解を招く表現、初心者が理解しにくい構成は修正する。
+
+## 目的
+
+Qiitaへの技術ブログ記事を管理・執筆するワークスペース。ビルドシステムやテストスイートはなく、主な成果物はMarkdown記事ファイルです。
+
+## ディレクトリ構成
+
+```
+qiita-tech-blogs/
+├── public/                  # qiita-cli管理フォルダ（記事本体）
+│   └── YYYY-MM-slug.md      # 1記事 = 1ファイル
+├── assets/                  # 記事で使用する画像
+│   └── YYYY-MM-slug/        # 記事ごとにサブフォルダ
+├── _meta/
+│   └── topics.md            # ネタ帳
+├── .github/workflows/
+│   └── publish.yml          # mainブランチpush時に自動publish
+└── qiita.config.json        # qiita-cli設定
+```
+
+## ファイル命名規則
+
+`public/` 内の記事ファイルは以下の形式で命名する：
+
+```
+YYYY-MM-記事スラッグ.md
+例: 2026-04-claude-code-tips.md
+```
+
+## 下書きと公開の管理
+
+フォルダ分けではなくフロントマターで管理する：
+
+- `ignorePublish: true` → 下書き（publishコマンドを実行しても投稿されない）
+- `ignorePublish: false` → 公開対象
+
+## CLIコマンド
+
+| コマンド | 内容 |
+|---|---|
+| `npx qiita new YYYY-MM-スラッグ` | 記事ファイルを新規作成 |
+| `npx qiita preview` | ローカルプレビュー起動（localhost:8888） |
+| `npx qiita publish YYYY-MM-スラッグ` | Qiitaに投稿・更新 |
+| `npx qiita pull` | Qiita上の編集をローカルに同期 |
+
+## 執筆に使うスキル
+
+以下は執筆フローで使うスキルの一覧です。このリポジトリにはスキル本体を同梱していないため、利用できるものは各環境のインストール状況で異なります。Claude Code では `/スキル名`、Codex では `$スキル名` または自然文で指定します。以下のフローでは Claude Code の表記を使います。
+
+スキルが見つからない場合は、その旨を伝え、このファイルの品質基準に沿って作業してください。
+
+- `/japanese-natural-writing` — 日本語テックブログのAI文体を検出・除去し、自然な人間らしい日本語に書き直す
+- `/japanese-tech-writing` — 日本語技術文書の文章規範（整形・段落構成・論証の厳密さ・冗長排除・LLM表現禁止）に沿ってリファイン
+- `/technical-editor-review` — 商用技術雑誌の編集者視点で記事をレビュー（技術精度・論理構造・読みやすさ・読み物としての魅力）
+- `/blog-hit-strategy` — 過去記事の実績データをもとにQiita向け戦略を提示（タイトル設計・トピック選定・構成パターン）
+- `/technical-blog-writing` — 開発者向け技術記事の構成・コード例・慣習のガイダンス
+- `/blog-originality` — 要約・翻訳で終わらないオリジナリティを加える（手を動かした記録・自分の疑問・トレンドとの接続）
+- `/qiita-tweet` — 記事を読んでX（Twitter）投稿文を1〜2文で生成し、Web Intentリンクで即投稿できる状態にする
+
+## 執筆フロー
+
+1. `npx qiita new YYYY-MM-スラッグ` で記事ファイルを作成
+2. `/blog-hit-strategy` でタイトル・構成方針を決める
+3. `/technical-blog-writing` のガイドラインに従って本文を執筆
+4. `/blog-originality` で手を動かした記録・疑問・トレンド接続を追加
+5. `npx qiita preview` でプレビュー確認
+6. `/japanese-tech-writing` で文章規範チェック・リファイン（構造・論証・冗長排除・LLM表現）
+7. `/japanese-natural-writing` でAI文体を除去（仕上げ）
+8. `/technical-editor-review` で技術精度・論理構造・読み物価値を編集者視点でレビュー
+9. `ignorePublish: false` に変更して `npx qiita publish` で投稿
+10. `/qiita-tweet` でX投稿文を生成して投稿
+11. `git add` → `git commit` → `git push` でGit管理
 
 ## 記事レビューの品質基準
 
