@@ -66,6 +66,7 @@ YYYY-MM-記事スラッグ.md
 - `/technical-editor-review` — 商用技術雑誌の編集者視点で記事をレビュー（技術精度・論理構造・読みやすさ・読み物としての魅力）
 - `/blog-hit-strategy` — 過去記事の実績データをもとにQiita向け戦略を提示（タイトル設計・トピック選定・構成パターン）
 - `/technical-blog-writing` — 開発者向け技術記事の構成・コード例・慣習のガイダンス
+- `$yomiyasu:yomiyasu` — 記事の執筆時に使い、不自然な比喩や曖昧な主述関係を避け、自然な日本語に整える。技術的な意味と条件を保ち、対象読者が読み切れる文量に抑える
 - `/blog-originality` — 要約・翻訳で終わらないオリジナリティを加える（手を動かした記録・自分の疑問・トレンドとの接続）
 - `/qiita-tweet` — 記事を読んでX（Twitter）投稿文を1〜2文で生成し、Web Intentリンクで即投稿できる状態にする
 
@@ -73,7 +74,7 @@ YYYY-MM-記事スラッグ.md
 
 1. `npx qiita new YYYY-MM-スラッグ` で記事ファイルを作成
 2. `/blog-hit-strategy` でタイトル・構成方針を決める
-3. `/technical-blog-writing` のガイドラインに従って本文を執筆
+3. `/technical-blog-writing` のガイドラインに従い、`$yomiyasu:yomiyasu` スキルを使って、自然な日本語で技術記事を執筆する。技術的な意味と条件を保ち、対象読者が読み切れる文量に抑える
 4. `/blog-originality` で手を動かした記録・疑問・トレンド接続を追加
 5. `npx qiita preview` でプレビュー確認
 6. `/japanese-tech-writing` で文章規範チェック・リファイン（構造・論証・冗長排除・LLM表現）
