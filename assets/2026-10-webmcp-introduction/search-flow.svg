@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="860" viewBox="0 0 1280 860" role="img" aria-labelledby="title desc">
+  <title id="title">WebMCPで商品検索を呼び出す流れ</title>
+  <desc id="desc">商品検索ページがブラウザを通じてツールを公開する。AIエージェントが予算5000円で呼び出すと、ページの検索関数が実行され、画面が更新される。AIにも同じ商品の一覧を返す。</desc>
+  <defs>
+    <marker id="green" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="#176b59" stroke-width="1.8"/></marker>
+    <marker id="orange" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="#b76520" stroke-width="1.8"/></marker>
+  </defs>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; fill: #23323a; }
+    .muted { fill: #53665e; }
+    .code { font-family: ui-monospace, Menlo, monospace; }
+    .label { font-size: 22px; font-weight: 600; }
+  </style>
+  <rect width="1280" height="860" fill="#f7f5f0"/>
+  <rect x="48" y="42" width="6" height="57" fill="#176b59"/>
+  <text x="74" y="68" font-size="22" class="muted">WEBMCP / 商品検索の例</text>
+  <text x="74" y="113" font-size="37" font-weight="700">AIの呼び出しで、ページの検索処理が動く</text>
+
+  <text x="62" y="194" class="label">1　ページがツールを公開</text>
+  <path d="M536 220H62" stroke="#176b59" stroke-width="3" stroke-dasharray="7 7" marker-end="url(#green)"/>
+  <text x="62" y="258" font-size="23" class="code">search_products</text>
+  <text x="62" y="291" font-size="22" class="muted">ツールの説明 ＋ 予算の条件</text>
+
+  <text x="62" y="371" font-size="29" font-weight="700">AIエージェント</text>
+  <path d="M63 395H355" stroke="#d0d8d0" stroke-width="2"/>
+  <text x="62" y="434" font-size="24">「5,000円以下の商品を</text>
+  <text x="62" y="470" font-size="24">　探して」という依頼</text>
+  <text x="62" y="522" font-size="22" class="muted">使うツールと引数を選ぶ</text>
+  <rect x="62" y="545" width="306" height="82" rx="5" fill="#e8eee8"/>
+  <text x="78" y="578" font-size="21" class="code">search_products</text>
+  <text x="78" y="608" font-size="21" class="code">{ maxPrice: 5000 }</text>
+
+  <text x="392" y="393" font-size="22" font-weight="700" fill="#b76520">2 呼び出す</text>
+  <path d="M390 414H516" stroke="#b76520" stroke-width="3.5" marker-end="url(#orange)"/>
+  <text x="392" y="449" font-size="21" class="muted">予算5,000円</text>
+
+  <rect x="538" y="172" width="692" height="561" rx="12" fill="white" stroke="#c6d0ca" stroke-width="2"/>
+  <path d="M550 172H1218Q1230 172 1230 184V218H538V184Q538 172 550 172" fill="#e6ebe5"/>
+  <circle cx="560" cy="195" r="5" fill="#86998e"/>
+  <circle cx="579" cy="195" r="5" fill="#86998e"/>
+  <circle cx="598" cy="195" r="5" fill="#86998e"/>
+  <text x="623" y="202" font-size="20" class="muted">ブラウザで開いた商品検索ページ</text>
+  <text x="578" y="277" font-size="31" font-weight="700">商品検索</text>
+  <text x="578" y="321" font-size="22" class="muted">予算の上限（円）</text>
+  <rect x="578" y="337" width="432" height="57" rx="5" fill="#fafbf8" stroke="#a8b9ae"/>
+  <text x="598" y="374" font-size="26" class="code">5000</text>
+  <rect x="1030" y="337" width="158" height="57" rx="5" fill="#176b59"/>
+  <text x="1109" y="374" font-size="24" text-anchor="middle" style="fill:white">検索</text>
+
+  <rect x="578" y="427" width="610" height="135" fill="#fbf7ef"/>
+  <rect x="578" y="427" width="4" height="135" fill="#db8c36"/>
+  <text x="602" y="467" font-size="23">マウス</text><text x="1158" y="467" font-size="23" text-anchor="end">2,000円</text>
+  <path d="M602 488H1158" stroke="#e7dfd0"/>
+  <text x="602" y="529" font-size="23">キーボード</text><text x="1158" y="529" font-size="23" text-anchor="end">4,500円</text>
+  <text x="578" y="605" font-size="22" font-weight="600">ページ内の検索関数が画面を更新</text>
+  <rect x="578" y="624" width="610" height="67" rx="4" fill="#233a31"/>
+  <text x="599" y="666" font-size="23" class="code" style="fill:#fff">searchProducts({ maxPrice: 5000 })</text>
+
+  <path d="M532 704H389" stroke="#176b59" stroke-width="3" marker-end="url(#green)"/>
+  <text x="62" y="692" class="label">3　AIにも検索結果を返す</text>
+  <text x="62" y="732" font-size="23" class="muted">マウス、キーボードの一覧</text>
+
+  <path d="M62 780H1218" stroke="#d0d8d0"/>
+  <text x="62" y="820" font-size="22" class="muted">ブラウザが呼び出しを仲介。フォームからの検索も、同じ検索関数を使う。</text>
+</svg>

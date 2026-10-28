@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebMCP 商品検索</title>
+<style>
+  body { margin: 48px auto; max-width: 620px; padding: 0 28px; color: #23323a; background: #f7f5f0; font: 18px/1.7 -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; }
+  h1 { margin-bottom: 28px; font-size: 32px; }
+  form { padding: 24px; background: white; border: 1px solid #d9dedb; border-radius: 12px; }
+  label { display: block; margin-bottom: 16px; }
+  input { display: block; box-sizing: border-box; width: 100%; margin-top: 8px; padding: 10px 14px; border: 1px solid #a9b9b2; border-radius: 6px; font: inherit; }
+  button { padding: 10px 30px; border: 0; border-radius: 6px; background: #176b59; color: white; font: inherit; cursor: pointer; }
+  #status { font-size: 14px; color: #4e665d; }
+  #results { min-height: 96px; padding: 24px; background: white; border-left: 4px solid #db8c36; white-space: pre-wrap; font: inherit; }
+</style>
+<h1>商品検索</h1>
+<form id="search-form">
+  <label>予算の上限（円）
+    <input id="budget" type="number" min="0" step="1" value="5000" required>
+  </label>
+  <button>検索</button>
+</form>
+<p id="status" role="status">WebMCPを確認しています。</p>
+<pre id="results" aria-live="polite">まだ検索していません。</pre>
+
+<script type="module">
+  const products = [
+    { name: "マウス", price: 2000 },
+    { name: "キーボード", price: 4500 },
+    { name: "モニター", price: 18000 },
+  ];
+  const budgetInput = document.querySelector("#budget");
+  const results = document.querySelector("#results");
+  const status = document.querySelector("#status");
+
+  function searchProducts({ maxPrice }) {
+    if (!Number.isInteger(maxPrice) || maxPrice < 0) {
+      throw new Error("maxPriceには0以上の整数を指定してください。");
+    }
+    const matches = products.filter(product => product.price <= maxPrice);
+    budgetInput.value = String(maxPrice);
+    results.textContent = matches.length
+      ? matches.map(product => `${product.name}: ${product.price}円`).join("\n")
+      : "該当する商品はありません。";
+    return { products: matches };
+  }
+
+  document.querySelector("#search-form").addEventListener("submit", event => {
+    event.preventDefault();
+    try {
+      searchProducts({ maxPrice: Number(budgetInput.value) });
+    } catch (error) {
+      results.textContent = error.message;
+    }
+  });
+
+  if (!document.modelContext) {
+    status.textContent = "WebMCPは利用できません。フォームから検索できます。";
+  } else {
+    try {
+      await document.modelContext.registerTool({
+        name: "search_products",
+        description: "予算の上限以下の商品を検索し、画面に表示します。購入はしません。",
+        inputSchema: {
+          type: "object",
+          properties: {
+            maxPrice: { type: "integer", minimum: 0, description: "予算の上限。日本円。" },
+          },
+          required: ["maxPrice"],
+        },
+        execute: async input => searchProducts(input),
+      });
+      status.textContent = "WebMCPツールを登録しました。";
+    } catch (error) {
+      status.textContent = `WebMCPの登録に失敗しました: ${error.message}`;
+    }
+  }
+</script>
+</html>
