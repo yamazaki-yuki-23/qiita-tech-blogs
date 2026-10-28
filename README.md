@@ -9,7 +9,7 @@ qiita-tech-blogs/
 ├── public/          # 記事本体（qiita-cli管理）
 ├── assets/          # 記事で使用する画像
 ├── _meta/
-│   └── topics.md    # ネタ帳
+│   └── article-review.md  # 記事の独立レビュー規則
 └── .github/
     └── workflows/
         └── publish.yml  # mainへのpushで自動公開

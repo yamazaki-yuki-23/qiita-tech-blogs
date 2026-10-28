@@ -24,7 +24,7 @@ qiita-tech-blogs/
 ├── assets/                  # 記事で使用する画像
 │   └── YYYY-MM-slug/        # 記事ごとにサブフォルダ
 ├── _meta/
-│   └── topics.md            # ネタ帳
+│   └── article-review.md    # 記事の独立レビュー規則
 ├── .github/workflows/
 │   └── publish.yml          # mainブランチpush時に自動publish
 └── qiita.config.json        # qiita-cli設定
