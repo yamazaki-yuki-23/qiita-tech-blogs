@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1040" viewBox="0 0 1280 1040" role="img" aria-labelledby="title desc">
+  <title id="title">AIが商品を検索する3つの方法</title>
+  <desc id="desc">画面を操作する方法では、AIが入力欄とボタンを探して操作する。サーバーのAPIを呼ぶ方法では、AIアプリがサーバーの検索APIを呼び、結果はAIアプリに返る。WebMCPでは、AIがブラウザを通してページの検索関数を呼び、結果は画面とAIの両方に出る。</desc>
+  <defs>
+    <marker id="green" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="#176b59" stroke-width="1.8"/></marker>
+    <marker id="orange" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="#b76520" stroke-width="1.8"/></marker>
+    <marker id="gray" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="#6b7c74" stroke-width="1.8"/></marker>
+  </defs>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; fill: #23323a; }
+    .muted { fill: #53665e; }
+    .code { font-family: ui-monospace, Menlo, monospace; }
+    .h { font-size: 25px; font-weight: 700; }
+    .note { font-size: 19px; fill: #53665e; }
+    .lab { font-size: 18px; }
+  </style>
+  <rect width="1280" height="1040" fill="#f7f5f0"/>
+  <rect x="48" y="40" width="6" height="57" fill="#176b59"/>
+  <text x="74" y="66" font-size="21" class="muted">WEBMCP / 「5,000円以下の商品を探して」とAIに頼んだとき</text>
+  <text x="74" y="110" font-size="34" font-weight="700">AIの呼び出しがどこに届き、結果がどこに出るか</text>
+
+  <!-- ===== 1. 画面を操作する方法 ===== -->
+  <g transform="translate(0,140)">
+    <rect x="40" y="0" width="1200" height="275" rx="12" fill="#fff" stroke="#d9dedb"/>
+    <text x="68" y="42" class="h">1. 画面を操作する方法</text>
+    <rect x="68" y="80" width="150" height="90" rx="10" fill="#e8eee8"/>
+    <text x="143" y="134" font-size="26" font-weight="700" text-anchor="middle">AI</text>
+
+    <text x="250" y="96" class="lab">入力欄とボタンを画面から探して、</text>
+    <text x="250" y="122" class="lab">予算5000を入れ、検索ボタンを押す</text>
+    <path d="M222 140H752" stroke="#b76520" stroke-width="3.5" marker-end="url(#orange)"/>
+
+    <rect x="760" y="58" width="440" height="172" rx="10" fill="#fff" stroke="#c6d0ca" stroke-width="2"/>
+    <path d="M770 58H1190Q1200 58 1200 68V88H760V68Q760 58 770 58" fill="#e6ebe5"/>
+    <circle cx="777" cy="73" r="4" fill="#86998e"/><circle cx="791" cy="73" r="4" fill="#86998e"/><circle cx="805" cy="73" r="4" fill="#86998e"/>
+    <text x="822" y="79" font-size="15" class="muted">商品検索ページ</text>
+    <rect x="780" y="104" width="250" height="40" rx="4" fill="#fafbf8" stroke="#b76520" stroke-width="2.5"/>
+    <text x="794" y="131" font-size="19" class="code">5000</text>
+    <rect x="1045" y="104" width="135" height="40" rx="4" fill="#176b59" stroke="#b76520" stroke-width="2.5"/>
+    <text x="1112" y="131" font-size="18" text-anchor="middle" style="fill:#fff">検索</text>
+    <rect x="780" y="158" width="400" height="58" fill="#fbf7ef"/><rect x="780" y="158" width="4" height="58" fill="#db8c36"/>
+    <text x="798" y="182" font-size="16">マウス: 2000円</text>
+    <text x="798" y="206" font-size="16">キーボード: 4500円</text>
+
+    <text x="68" y="252" class="note">結果はページに表示される。ただし画面の構成が変わると、入力欄やボタンを見つけられず失敗しやすい。</text>
+  </g>
+
+  <!-- ===== 2. サーバーのAPIを呼ぶ方法 ===== -->
+  <g transform="translate(0,435)">
+    <rect x="40" y="0" width="1200" height="275" rx="12" fill="#fff" stroke="#d9dedb"/>
+    <text x="68" y="42" class="h">2. サーバーのAPIを呼ぶ方法</text>
+    <rect x="68" y="80" width="150" height="90" rx="10" fill="#e8eee8"/>
+    <text x="143" y="134" font-size="24" font-weight="700" text-anchor="middle">AIアプリ</text>
+
+    <text x="240" y="100" class="lab">リクエスト（予算5000）</text>
+    <path d="M222 114H492" stroke="#b76520" stroke-width="3.5" marker-end="url(#orange)"/>
+    <path d="M496 146H226" stroke="#176b59" stroke-width="3" marker-end="url(#green)"/>
+    <text x="250" y="180" class="lab">商品一覧</text>
+
+    <rect x="500" y="84" width="200" height="90" rx="8" fill="#eef1f5" stroke="#a9b6c6" stroke-width="2"/>
+    <text x="600" y="122" font-size="19" text-anchor="middle">サイトのサーバー</text>
+    <text x="600" y="152" font-size="18" text-anchor="middle" class="code">検索API</text>
+
+    <path d="M708 129H792" stroke="#6b7c74" stroke-width="2" stroke-dasharray="6 6"/>
+    <text x="750" y="116" font-size="15" text-anchor="middle" class="muted">通らない</text>
+
+    <rect x="800" y="58" width="400" height="172" rx="10" fill="#fff" stroke="#c6d0ca" stroke-width="2"/>
+    <path d="M810 58H1190Q1200 58 1200 68V88H800V68Q800 58 810 58" fill="#e6ebe5"/>
+    <circle cx="817" cy="73" r="4" fill="#86998e"/><circle cx="831" cy="73" r="4" fill="#86998e"/><circle cx="845" cy="73" r="4" fill="#86998e"/>
+    <text x="862" y="79" font-size="15" class="muted">利用者が見ている商品検索ページ</text>
+    <rect x="820" y="104" width="220" height="40" rx="4" fill="#fafbf8" stroke="#a8b9ae"/>
+    <rect x="1052" y="104" width="128" height="40" rx="4" fill="#9fb8ae"/>
+    <text x="1116" y="131" font-size="18" text-anchor="middle" style="fill:#fff">検索</text>
+    <rect x="820" y="158" width="360" height="58" fill="#f2f2f0"/>
+    <text x="838" y="193" font-size="16" class="muted">まだ検索していません。</text>
+
+    <text x="68" y="252" class="note">結果はAIアプリに返り、利用者が見ているページに表示されるとは限らない。サーバーに検索APIが必要。</text>
+  </g>
+
+  <!-- ===== 3. WebMCP ===== -->
+  <g transform="translate(0,730)">
+    <rect x="40" y="0" width="1200" height="275" rx="12" fill="#fff" stroke="#176b59" stroke-width="2"/>
+    <text x="68" y="42" class="h" style="fill:#176b59">3. WebMCP</text>
+    <rect x="68" y="80" width="150" height="90" rx="10" fill="#e8eee8"/>
+    <text x="143" y="134" font-size="26" font-weight="700" text-anchor="middle">AI</text>
+
+    <text x="240" y="98" class="lab">ツールを呼ぶ</text>
+    <text x="240" y="138" font-size="16" class="muted">予算5000</text>
+    <path d="M222 110H412" stroke="#b76520" stroke-width="3.5" marker-end="url(#orange)"/>
+    <path d="M416 162H226" stroke="#176b59" stroke-width="3" marker-end="url(#green)"/>
+    <text x="250" y="196" class="lab">画面と同じ商品一覧</text>
+
+    <rect x="420" y="50" width="780" height="186" rx="10" fill="#fff" stroke="#c6d0ca" stroke-width="2"/>
+    <path d="M430 50H1190Q1200 50 1200 60V80H420V60Q420 50 430 50" fill="#e6ebe5"/>
+    <circle cx="437" cy="65" r="4" fill="#86998e"/><circle cx="451" cy="65" r="4" fill="#86998e"/><circle cx="465" cy="65" r="4" fill="#86998e"/>
+    <text x="482" y="71" font-size="15" class="muted">ブラウザ</text>
+
+    <rect x="432" y="92" width="150" height="132" rx="6" fill="#e3efe9" stroke="#176b59" stroke-width="1.5"/>
+    <text x="507" y="148" font-size="17" font-weight="700" text-anchor="middle" style="fill:#176b59">WebMCP</text>
+    <text x="507" y="174" font-size="14" text-anchor="middle" class="muted">ツールの呼び出しを</text>
+    <text x="507" y="194" font-size="14" text-anchor="middle" class="muted">ページに渡す</text>
+    <path d="M584 200H630" stroke="#176b59" stroke-width="3" marker-end="url(#green)"/>
+
+    <text x="640" y="104" font-size="14" class="muted">商品検索ページ</text>
+    <rect x="640" y="112" width="260" height="34" rx="4" fill="#fafbf8" stroke="#a8b9ae"/>
+    <text x="652" y="135" font-size="17" class="code">5000</text>
+    <rect x="912" y="112" width="110" height="34" rx="4" fill="#176b59"/>
+    <text x="967" y="135" font-size="16" text-anchor="middle" style="fill:#fff">検索</text>
+    <rect x="1036" y="112" width="150" height="72" fill="#fbf7ef"/><rect x="1036" y="112" width="4" height="72" fill="#db8c36"/>
+    <text x="1048" y="140" font-size="15">マウス: 2000円</text>
+    <text x="1048" y="166" font-size="15">キーボード: 4500円</text>
+    <rect x="640" y="184" width="382" height="34" rx="4" fill="#233a31"/>
+    <text x="652" y="207" font-size="15" class="code" style="fill:#fff">searchProducts({ maxPrice: 5000 })</text>
+    <path d="M1024 200Q1060 200 1080 188" stroke="#176b59" stroke-width="2" fill="none" marker-end="url(#green)"/>
+
+    <text x="68" y="262" class="note">ページの検索関数が画面を更新し、同じ商品一覧をAIにも返す。人の検索ボタンも同じ関数を使う。</text>
+  </g>
+</svg>
