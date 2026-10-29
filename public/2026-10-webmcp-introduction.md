@@ -331,4 +331,5 @@ WebMCPの構想案を読むだけではなく、実装して試せる段階ま�
 
 - [ChromeのOrigin Trial案内](https://developer.chrome.com/blog/ai-webmcp-origin-trial)
 - [Chrome Platform StatusのWebMCP登録情報（Origin Trialの対象バージョン）](https://chromestatus.com/feature/5117755740913664)
+- [Microsoft Edge 150のリリースノート（Origin Trialの一覧にWebMCPを掲載）](https://learn.microsoft.com/en-us/microsoft-edge/web-platform/release-notes/150#origin-trials)
 - [EdgeのOrigin Trial登録ページ](https://developer.microsoft.com/en-us/microsoft-edge/origin-trials/trials/0b76fe60-b266-458e-a285-04e375c0c31a)
