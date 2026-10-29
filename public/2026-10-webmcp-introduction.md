@@ -76,8 +76,6 @@ WebMCPではAIから呼べるようにした機能を「ツール」と呼びま
 - 受け取る値の条件: 「予算は0以上の整数」のように、ツールに渡してほしい値の型や範囲を書きます。
 - 実行する関数: ツールが呼ばれたときに動く検索関数です。
 
-<!-- 下書きの画像は assets/2026-10-webmcp-introduction/ に保存。公開前にGitHubへの反映と公開URLでの表示を確認する。 -->
-
 ![ページが商品検索ツールを公開し、AIが予算5,000円で呼び出すと、ページに商品が表示され、AIにも同じ商品一覧が返る](https://raw.githubusercontent.com/yamazaki-yuki-23/qiita-tech-blogs/main/assets/2026-10-webmcp-introduction/search-flow.png)
 
 図の番号に沿って流れを追います。
