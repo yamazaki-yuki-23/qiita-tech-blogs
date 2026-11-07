@@ -1,5 +1,5 @@
 ---
-title: MCP・MCP Apps・WebMCPの選び方を公式情報から整理する
+title: MCP・MCP Apps・WebMCPは何が違うのか？どう使い分けるかを整理する
 tags:
   - MCP
   - WebMCP
