@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="base.css">
+<style>
+  .row { position: absolute; left: 32px; width: 896px; height: 150px; border-radius: 14px; background: var(--win); border: 1.5px solid var(--border); }
+  .name { position: absolute; left: 22px; top: 18px; font-size: 22px; font-weight: 800; }
+  .like { position: absolute; left: 22px; top: 52px; font-size: 13.5px; color: var(--sub); line-height: 1.6; }
+  .track { position: absolute; left: 250px; top: 62px; width: 620px; height: 30px; border-radius: 8px; background: #0f1628; border: 1.5px solid var(--border); }
+  .seg { position: absolute; top: 0; height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: var(--bg); }
+  .gap { position: absolute; top: 0; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #64748b; }
+  .tick { position: absolute; top: 100px; font-size: 12px; color: var(--sub); transform: translateX(-50%); white-space: nowrap; }
+  .lbl { position: absolute; left: 250px; top: 28px; font-size: 13px; font-weight: 700; color: var(--sub); }
+</style>
+</head>
+<body>
+<div class="head"><div class="badge" style="background:var(--user)">観点1</div><h1>機能をいつでも使えるか、ページを開いている間だけか</h1></div>
+
+<div class="row" style="top:80px">
+  <div class="name" style="color:var(--mcp)">MCP</div>
+  <div class="like">たとえ：コールセンター<br>どこからでも、いつでも</div>
+  <div class="lbl">ツールを使える時間</div>
+  <div class="track"><div class="seg" style="left:2px; width:612px; background:var(--mcp)">MCPサーバーが動いていれば、いつでも使える</div></div>
+  <div class="tick" style="left:250px">0:00</div><div class="tick" style="left:405px">6:00</div><div class="tick" style="left:560px">12:00</div><div class="tick" style="left:715px">18:00</div><div class="tick" style="left:870px">24:00</div>
+</div>
+
+<div class="row" style="top:250px">
+  <div class="name" style="color:var(--web)">WebMCP</div>
+  <div class="like">たとえ：店内の専門スタッフ<br>利用者が店にいる間だけ</div>
+  <div class="lbl">ツールを使える時間</div>
+  <div class="track">
+    <div class="gap" style="left:0; width:232px">ページを開いていない</div>
+    <div class="seg" style="left:232px; width:96px; background:var(--web)">開いている</div>
+    <div class="gap" style="left:328px; width:110px">閉じた</div>
+    <div class="seg" style="left:438px; width:70px; background:var(--web)">開いている</div>
+    <div class="gap" style="left:508px; width:110px">閉じた</div>
+  </div>
+  <div class="tick" style="left:250px">0:00</div><div class="tick" style="left:405px">6:00</div><div class="tick" style="left:560px">12:00</div><div class="tick" style="left:715px">18:00</div><div class="tick" style="left:870px">24:00</div>
+</div>
+
+<div class="cap" style="bottom:50px"><div class="n" style="background:var(--user)">✓</div>ページを閉じている間にもAIに処理させたいなら、MCP</div>
+<div class="note">※時刻と利用時間は説明用の例。たとえはChromeの比較ページ「When to use WebMCP and MCP」による</div>
+</body>
+</html>

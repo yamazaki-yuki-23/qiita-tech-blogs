@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="base.css">
+<script>window.DURATION = 15000;</script>
+<style>
+  .bar2 { position: absolute; bottom: 0; width: 40px; border-radius: 5px 5px 0 0; background: var(--apps); transform-origin: bottom; }
+  .lbl { position: absolute; top: 152px; width: 60px; text-align: center; font-size: 11.5px; color: var(--sub); }
+</style>
+</head>
+<body>
+<div class="head"><div class="badge" style="background:var(--apps)">MCP Apps</div><h1>ツールに結びつけた画面を、会話の中に表示する</h1></div>
+<div class="steps"><div id="d1" class="dot">1</div><div id="d2" class="dot">2</div><div id="d3" class="dot">3</div><div id="d4" class="dot">4</div></div>
+
+<div class="win" style="left:36px; top:76px; width:560px; height:380px">
+  <div class="bar"><i></i><i></i><i></i><span>AIアプリ（MCPホスト）</span></div>
+</div>
+<div class="abs" style="left:52px; top:406px; width:528px; height:36px; border-radius:10px; border:1.5px solid var(--border); background:#0f1628"></div>
+<div id="typing" class="abs" style="left:66px; top:414px; font-size:14.5px">地域別の売上を見せて</div>
+<div id="q" class="bubble user" style="left:420px; top:120px">地域別の売上を見せて</div>
+
+<div id="frame" class="abs" style="left:52px; top:172px; width:528px; height:222px; border:2px dashed var(--apps); border-radius:12px; background:#0f1628">
+  <div class="abs" style="left:12px; top:8px; font-size:11.5px; font-weight:800; color:var(--apps)">サンドボックス化したiframe　<span class="mono" style="font-weight:400">ui://sales/chart</span></div>
+  <div class="abs" style="left:20px; top:34px; width:300px; height:150px; border-bottom:1.5px solid var(--border)">
+    <div id="b1" class="bar2" style="left:10px; height:110px"></div>
+    <div id="b2" class="bar2" style="left:68px; height:66px"></div>
+    <div id="b3" class="bar2" style="left:126px; height:132px"></div>
+    <div id="b4" class="bar2" style="left:184px; height:46px"></div>
+    <div id="b5" class="bar2" style="left:242px; height:88px"></div>
+  </div>
+  <div class="lbl" style="left:20px; top:190px">北海道</div><div class="lbl" style="left:78px; top:190px">東北</div><div class="lbl" style="left:136px; top:190px">関東</div><div class="lbl" style="left:194px; top:190px">中部</div><div class="lbl" style="left:252px; top:190px">近畿</div>
+  <div id="detail" class="abs" style="left:340px; top:40px; width:170px; padding:12px; border-radius:10px; border:1.5px solid var(--apps); background:#1d1a3a; font-size:13px; line-height:1.7">
+    <b style="color:var(--apps)">東北の詳細</b><br>A店　120万円<br>B店　 80万円<br>C店　 45万円
+  </div>
+  <div id="cursor" class="abs" style="left:0; top:0; width:18px; height:18px; border-radius:50%; background:rgba(251,146,60,.35); border:2px solid var(--user)"></div>
+</div>
+
+<div class="win" style="left:660px; top:76px; width:264px; height:380px">
+  <div class="bar"><i></i><i></i><i></i><span>MCPサーバー</span></div>
+</div>
+<div class="log" style="left:674px; top:120px"><b>tools</b>: show_sales, region_detail</div>
+<div class="log" style="left:674px; top:142px"><b>resource</b>: ui://sales/chart</div>
+<div id="l1" class="log" style="left:674px; top:176px"><span style="color:var(--apps)">←</span> <b>tools/call</b> show_sales</div>
+<div id="l2" class="log" style="left:674px; top:198px"><span style="color:var(--apps)">←</span> <b>resources/read</b></div>
+<div id="l4" class="log" style="left:674px; top:220px"><span style="color:var(--web)">→</span> <b>result</b> show_sales</div>
+<div id="l5" class="log" style="left:674px; top:264px"><span style="color:var(--web)">→</span> <b>result</b> region_detail</div>
+<div id="l3" class="log" style="left:674px; top:242px"><span style="color:var(--apps)">←</span> <b>tools/call</b> region_detail</div>
+
+<svg class="abs" style="left:0; top:0" width="960" height="540">
+  <line x1="596" y1="250" x2="660" y2="250" stroke="#26324f" stroke-width="3"/>
+  <line id="f1" x1="596" y1="250" x2="660" y2="250" stroke="#a78bfa" stroke-width="3" stroke-dasharray="6 6" opacity=".25"/>
+  <line id="f2" x1="596" y1="250" x2="660" y2="250" stroke="#a78bfa" stroke-width="3" stroke-dasharray="6 6" opacity="0"/>
+  <line id="f4" x1="596" y1="250" x2="660" y2="250" stroke="#34d399" stroke-width="3" stroke-dasharray="6 6" opacity="0"/>
+  <line id="f3" x1="596" y1="250" x2="660" y2="250" stroke="#a78bfa" stroke-width="3" stroke-dasharray="6 6" opacity="0"/>
+</svg>
+
+<div id="p1" class="packet mono" style="background:var(--apps); box-shadow:0 0 18px var(--apps)">tools/call</div>
+<div id="p2" class="packet mono" style="background:var(--apps); box-shadow:0 0 18px var(--apps)">resources/read</div>
+<div id="p3" class="packet" style="background:var(--web); box-shadow:0 0 18px var(--web)">HTML</div>
+<div id="p4" class="packet mono" style="background:var(--user); box-shadow:0 0 18px var(--user)">tools/call（postMessage）</div>
+<div id="p5" class="packet mono" style="background:var(--apps); box-shadow:0 0 18px var(--apps)">tools/call</div>
+<div id="p6" class="packet mono" style="background:var(--web); box-shadow:0 0 18px var(--web)">result</div>
+<div id="p8" class="packet mono" style="background:var(--web); box-shadow:0 0 18px var(--web)">result</div>
+<div id="p7" class="packet mono" style="background:var(--web); box-shadow:0 0 18px var(--web)">ui/notifications/tool-result</div>
+
+<div id="j1" class="json" style="left:430px; top:288px"><span class="t" style="color:var(--apps)">ツールの定義（tools/list で取得済み）</span>{ <span class="k">"name"</span>: <span class="s">"show_sales"</span>,
+  <span class="k">"_meta"</span>: { <span class="k">"ui"</span>: {
+    <span class="k">"resourceUri"</span>: <span class="s">"ui://sales/chart"</span> } } }</div>
+<div id="j2" class="json" style="left:430px; top:288px"><span class="t" style="color:var(--apps)">AIアプリ → MCPサーバー</span>{ <span class="k">"method"</span>: <span class="s">"resources/read"</span>,
+  <span class="k">"params"</span>: { <span class="k">"uri"</span>: <span class="s">"ui://sales/chart"</span> } }
+<span class="t" style="color:var(--web); margin-top:8px">MCPサーバー → AIアプリ</span>{ <span class="k">"result"</span>: { <span class="k">"resultType"</span>: <span class="s">"complete"</span>,
+  <span class="k">"contents"</span>: [ { <span class="k">"uri"</span>: <span class="s">"ui://sales/chart"</span>,
+    <span class="k">"mimeType"</span>: <span class="s">"text/html;profile=mcp-app"</span>,
+    <span class="k">"text"</span>: <span class="s">"&lt;!doctype html&gt;…"</span> } ] } }</div>
+
+<div id="c0" class="cap"><div class="n" style="background:var(--user)">▶</div>利用者が、AIアプリに作業を頼む</div>
+<div id="c1" class="cap"><div class="n" style="background:var(--apps)">1</div>AIアプリがツールを呼ぶ。ツールの定義は<span class="mono">ui://</span>の画面を指している</div>
+<div id="c2" class="cap"><div class="n" style="background:var(--apps)">2</div>AIアプリが、そのURIのHTMLをMCPサーバーから取得する</div>
+<div id="c3" class="cap"><div class="n" style="background:var(--apps)">3</div>AIアプリが、取得したHTMLを会話の中のiframeに表示し、ツールの結果を渡す</div>
+<div id="c4" class="cap"><div class="n" style="background:var(--apps)">4</div>画面の操作から、AIアプリを通してMCPサーバーのツールを呼ぶ</div>
+<div id="c5" class="cap" style="color:var(--apps)"><div class="n" style="background:var(--apps)">✓</div>テキストで頼み直さなくても、会話の中の画面で操作できる</div>
+<div class="note">※名前とURI、数値は説明用の例。主なメッセージだけを表示（ui/initialize、tool-input、jsonrpc、id、リクエストの _meta などは省略）</div>
+
+<script src="timeline.js"></script>
+<script>
+const A = "#a78bfa";
+show("#c0", 300, 2000);
+type("#typing", 500, 900);
+tl("#typing", [[1500, { opacity: 1 }], [1600, { opacity: 0 }]]);
+show("#q", 1600);
+
+step(1, 2200, 4700, A); show("#c1", 2200, 4600);
+flow("#f1", 2500, 3400);
+move("#p1", 2400, 3300, [500, 238], [640, 238]);
+show("#l1", 3300);
+show("#j1", 2600, 4600);
+
+step(2, 4900, 7300, A); show("#c2", 4900, 7200);
+flow("#f2", 5100, 6000);
+move("#p2", 5000, 5900, [470, 238], [640, 238]);
+show("#l2", 5900);
+move("#p3", 6400, 7100, [590, 238], [470, 238]);
+show("#j2", 5200, 7200);
+
+step(3, 7500, 9500, A); show("#c3", 7500, 9400);
+show("#frame", 7600);
+["#b1", "#b2", "#b3", "#b4", "#b5"].forEach((b, i) => tl(b, [[9200 + i * 120, { transform: "scaleY(0)" }], [9700 + i * 120, { transform: "scaleY(1)" }]]));
+flow("#f4", 7600, 8200, true);
+show("#l4", 7500);
+move("#p8", 7600, 8200, [590, 238], [450, 238]);
+move("#p7", 8400, 9200, [340, 238], [170, 230]);
+
+step(4, 9700, null, A); show("#c4", 9700, 13000);
+tl("#cursor", [[9700, { opacity: 0, transform: "translate(250px, 170px)" }], [9900, { opacity: 1, transform: "translate(250px, 170px)" }], [10500, { opacity: 1, transform: "translate(107px, 140px)" }], [10600, { opacity: 1, transform: "translate(107px, 140px) scale(1.6)" }], [10800, { opacity: 1, transform: "translate(107px, 140px) scale(1)" }], [12800, { opacity: 0, transform: "translate(107px, 140px)" }]]);
+tl("#b2", [[10600, { background: A, boxShadow: "none" }], [10800, { background: "#fb923c", boxShadow: "0 0 16px #fb923c" }]]);
+move("#p4", 10900, 11500, [150, 330], [240, 128]);
+flow("#f3", 11700, 12400);
+move("#p5", 11600, 12300, [500, 238], [640, 238]);
+show("#l3", 12300);
+show("#l5", 12700);
+move("#p6", 12700, 13300, [590, 238], [430, 230]);
+show("#detail", 13300);
+show("#c5", 13600);
+</script>
+</body>
+</html>

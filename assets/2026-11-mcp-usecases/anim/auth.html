@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="base.css">
+<style>
+  .lane { position: absolute; left: 32px; width: 896px; height: 182px; border-radius: 14px; background: rgba(18,26,46,.6); border: 1.5px solid var(--border); }
+  .lname { position: absolute; left: 18px; top: 12px; font-size: 20px; font-weight: 800; }
+  .box { position: absolute; padding: 12px 14px; border-radius: 10px; background: var(--win); border: 1.5px solid var(--border); font-size: 15px; font-weight: 800; line-height: 1.5; text-align: center; }
+  .box small { display: block; font-size: 12px; font-weight: 400; color: var(--sub); }
+  .arrow { position: absolute; height: 3px; }
+  .arrow::after { content: ""; position: absolute; right: -2px; top: -6px; border: 7.5px solid transparent; border-left: 11px solid currentColor; border-right: 0; }
+  .alabel { position: absolute; font-size: 12.5px; font-weight: 700; text-align: center; line-height: 1.45; }
+  .key { position: absolute; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 800; color: var(--bg); white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="head"><div class="badge" style="background:var(--user)">観点2</div><h1>処理に使うログイン情報が違う</h1></div>
+
+<!-- MCP -->
+<div class="lane" style="top:74px"><div class="lname" style="color:var(--mcp)">MCP</div></div>
+<div class="box" style="left:62px; top:122px; width:170px">AIアプリ<small>Claude Desktopなど</small></div>
+<div class="arrow" style="left:236px; top:150px; width:200px; background:var(--mcp); color:var(--mcp)"></div>
+<div class="key" style="left:262px; top:122px; background:var(--mcp)">MCPの接続用の認証情報</div>
+<div class="alabel" style="left:236px; top:162px; width:200px; color:var(--sub)">例：OAuthで取得したトークン</div>
+<div class="box" style="left:444px; top:122px; width:170px">MCPサーバー<small>自社が用意する</small></div>
+<div class="arrow" style="left:618px; top:150px; width:90px; background:var(--border); color:var(--border)"></div>
+<div class="box" style="left:716px; top:122px; width:190px">自社のサービス<small>データや機能</small></div>
+<div class="alabel" style="left:62px; top:214px; width:844px; text-align:left; color:var(--ink); font-size:14px">利用者本人の権限で処理するなら、ブラウザのログインとは別に、MCPの接続で認証する（リモートのサーバーではOAuthが推奨）</div>
+
+<!-- WebMCP -->
+<div class="lane" style="top:278px; height:200px"><div class="lname" style="color:var(--web)">WebMCP</div></div>
+<div class="abs" style="left:62px; top:320px; width:552px; height:116px; border-radius:12px; border:1.5px dashed var(--web)"></div>
+<div class="abs" style="left:76px; top:326px; font-size:12px; font-weight:800; color:var(--web)">利用者のブラウザ</div>
+<div class="box" style="left:80px; top:346px; width:170px">AIエージェント<small>ページのツールを呼ぶ</small></div>
+<div class="arrow" style="left:254px; top:374px; width:96px; background:var(--web); color:var(--web)"></div>
+<div class="box" style="left:358px; top:346px; width:240px">自社のWebページ<small>ツールはページのJavaScriptで動く</small></div>
+<div class="key" style="left:400px; top:330px; background:var(--user)">● ログイン中のセッション</div>
+<div class="arrow" style="left:602px; top:374px; width:106px; background:var(--web); color:var(--web)"></div>
+<div class="alabel" style="left:610px; top:384px; width:100px; color:var(--web)">同じセッション<br>のまま</div>
+<div class="box" style="left:716px; top:346px; width:190px">自社のサービス<small>データや機能</small></div>
+<div class="alabel" style="left:62px; top:446px; width:844px; text-align:left; color:var(--ink); font-size:14px">利用者がいまブラウザでログインしているセッションを、そのまま使える</div>
+
+<div class="note">※出典：Chromeの比較ページ「When to use WebMCP and MCP」、MCPのアーキテクチャ概要、WebMCP公式提案</div>
+</body>
+</html>

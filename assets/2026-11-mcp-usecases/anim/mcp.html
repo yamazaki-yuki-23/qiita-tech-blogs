@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="base.css">
+<script>window.DURATION = 12500;</script>
+</head>
+<body>
+<div class="head"><div class="badge" style="background:var(--mcp)">MCP</div><h1>AIアプリが、MCPサーバーのツールを呼ぶ</h1></div>
+<div class="steps"><div id="d1" class="dot">1</div><div id="d2" class="dot">2</div><div id="d3" class="dot">3</div><div id="d4" class="dot">4</div></div>
+
+<div class="win" style="left:36px; top:76px; width:410px; height:340px">
+  <div class="bar"><i></i><i></i><i></i><span>AIアプリ（MCPホスト）</span></div>
+</div>
+<div class="abs" style="left:52px; top:364px; width:378px; height:36px; border-radius:10px; border:1.5px solid var(--border); background:#0f1628"></div>
+<div id="typing" class="abs" style="left:66px; top:372px; font-size:14.5px">来週の予定を教えて</div>
+<div id="q" class="bubble user" style="left:270px; top:124px">来週の予定を教えて</div>
+<div id="tc1" class="toolchip" style="left:52px; top:184px; color:var(--mcp); border-color:var(--mcp)">⚙ get_events を実行中…</div>
+<div id="tc2" class="toolchip" style="left:52px; top:184px; color:var(--web); border-color:var(--web); border-style:solid">✓ get_events の結果を受け取った</div>
+<div id="a" class="bubble ai" style="left:52px; top:232px; width:370px">来週の予定は3件です。<br>月 10:00 定例、水 14:00 レビュー、<br>金 16:00 1on1</div>
+
+<div class="win" style="left:604px; top:76px; width:320px; height:340px">
+  <div class="bar"><i></i><i></i><i></i><span>MCPサーバー（例：カレンダー連携）</span></div>
+</div>
+<div class="log" style="left:620px; top:122px"><b>tools</b>: get_events, create_event</div>
+<div id="l1" class="log" style="left:620px; top:152px"><span style="color:var(--mcp)">←</span> <b>tools/call</b> get_events</div>
+<div id="l2" class="log" style="left:620px; top:176px">　 カレンダーから来週の予定を取得</div>
+<div id="l3" class="log" style="left:620px; top:200px"><span style="color:var(--web)">→</span> <b>result</b>（予定3件）</div>
+
+<svg class="abs" style="left:0; top:0" width="960" height="540">
+  <line x1="446" y1="150" x2="604" y2="150" stroke="#26324f" stroke-width="3"/>
+  <line id="f1" x1="446" y1="150" x2="604" y2="150" stroke="#60a5fa" stroke-width="3" stroke-dasharray="6 6"/>
+  <line id="f2" x1="446" y1="150" x2="604" y2="150" stroke="#34d399" stroke-width="3" stroke-dasharray="6 6" opacity="0"/>
+</svg>
+<div class="abs" style="left:476px; top:120px; font-size:11px; color:var(--sub); font-weight:700">JSON-RPC</div>
+
+<div id="p1" class="packet mono" style="background:var(--mcp); box-shadow:0 0 18px var(--mcp)">tools/call</div>
+<div id="p2" class="packet mono" style="background:var(--web); box-shadow:0 0 18px var(--web)">result</div>
+
+<div id="j1" class="json" style="left:300px; top:236px"><span class="t" style="color:var(--mcp)">AIアプリ → MCPサーバー</span>{ <span class="k">"method"</span>: <span class="s">"tools/call"</span>,
+  <span class="k">"params"</span>: {
+    <span class="k">"name"</span>: <span class="s">"get_events"</span>,
+    <span class="k">"arguments"</span>: { <span class="k">"range"</span>: <span class="s">"next_week"</span> } } }</div>
+<div id="j2" class="json" style="left:300px; top:236px"><span class="t" style="color:var(--web)">MCPサーバー → AIアプリ</span>{ <span class="k">"result"</span>: {
+    <span class="k">"resultType"</span>: <span class="s">"complete"</span>,
+    <span class="k">"content"</span>: [ { <span class="k">"type"</span>: <span class="s">"text"</span>,
+      <span class="k">"text"</span>: <span class="s">"月 10:00 定例, …"</span> } ] } }</div>
+
+<div id="c1" class="cap"><div class="n" style="background:var(--user)">1</div>利用者が、AIアプリに作業を頼む</div>
+<div id="c2" class="cap"><div class="n" style="background:var(--mcp)">2</div>AIアプリが、MCPサーバーのツールを呼ぶ（tools/call）</div>
+<div id="c3" class="cap"><div class="n" style="background:var(--web)">3</div>MCPサーバーが処理して、結果を返す</div>
+<div id="c4" class="cap"><div class="n" style="background:var(--mcp)">4</div>AIアプリが、結果をもとに会話で答える</div>
+<div id="c5" class="cap" style="color:var(--mcp)"><div class="n" style="background:var(--mcp)">✓</div>自社のWebサイトを開いていなくても、サーバーが動いていれば使える</div>
+<div class="note">※ツール名、引数、予定は説明用の例。JSONは主なフィールドだけを表示（jsonrpc、id、_meta などは省略）</div>
+
+<script src="timeline.js"></script>
+<script>
+const C = "#60a5fa";
+step(1, 400, 2600, "#fb923c"); show("#c1", 400, 2500);
+type("#typing", 700, 1000);
+tl("#typing", [[1900, { opacity: 1 }], [2000, { opacity: 0 }]]);
+show("#q", 2000);
+
+step(2, 2800, 5200, C); show("#c2", 2800, 5100);
+show("#tc1", 2900, 7700);
+flow("#f1", 3200, 4300);
+move("#p1", 3200, 4200, [440, 138], [560, 138]);
+show("#j1", 3300, 5100);
+show("#l1", 4200);
+show("#l2", 4600);
+
+step(3, 5400, 7700, "#34d399"); show("#c3", 5400, 7600);
+show("#l3", 5500);
+flow("#f2", 5800, 6900, true);
+move("#p2", 5800, 6800, [560, 138], [450, 138]);
+show("#j2", 5900, 7600);
+
+step(4, 7900, null, C); show("#c4", 7900, 9900);
+show("#tc2", 8000);
+show("#a", 8300);
+show("#c5", 10200);
+</script>
+</body>
+</html>

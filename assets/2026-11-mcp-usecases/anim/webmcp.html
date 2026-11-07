@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="base.css">
+<script>window.DURATION = 15000;</script>
+<style>
+  .hotel { position: absolute; left: 52px; width: 540px; height: 40px; padding: 0 14px; border-radius: 9px; background: #18213a;
+    border: 1.5px solid var(--border); display: flex; align-items: center; gap: 14px; font-size: 14px; }
+  .hotel .img { width: 26px; height: 22px; border-radius: 5px; background: #2a3658; }
+  .hotel .w { margin-left: auto; color: var(--sub); font-size: 13px; }
+  .fchip { position: absolute; top: 160px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1.5px solid var(--border); color: var(--sub); }
+</style>
+</head>
+<body>
+<div class="head"><div class="badge" style="background:var(--web)">WebMCP</div><h1>開いているページの機能を、AIエージェントが使う</h1></div>
+<div class="steps"><div id="d1" class="dot">1</div><div id="d2" class="dot">2</div><div id="d3" class="dot">3</div><div id="d4" class="dot">4</div></div>
+
+<div class="win" style="left:36px; top:76px; width:888px; height:380px">
+  <div class="bar"><i></i><i></i><i></i>
+    <span style="margin-left:14px; padding:4px 14px; border-radius:8px 8px 0 0; background:var(--win); color:var(--ink)">ホテル検索 ― 自社のWebサイト</span>
+  </div>
+</div>
+<div class="abs mono" style="left:52px; top:118px; width:540px; height:28px; border-radius:8px; background:#0f1628; border:1.5px solid var(--border); font-size:12px; color:var(--sub); padding:6px 12px">https://hotel.example.com/search?area=tokyo</div>
+<div class="abs" style="left:606px; top:110px; width:2px; height:346px; background:var(--border)"></div>
+
+<div class="fchip" style="left:52px">エリア：東京駅周辺</div>
+<div id="fnew" class="fchip" style="left:186px; color:var(--web); border-color:var(--web)">徒歩10分以内</div>
+<div class="abs" style="left:470px; top:160px; font-size:12px; color:var(--sub)">● ログイン中：利用者</div>
+<div class="hotel" style="top:194px"><div class="img"></div>ホテルA<span class="w">駅から徒歩3分</span></div>
+<div id="h2" class="hotel" style="top:240px"><div class="img"></div>ホテルB<span class="w">駅から徒歩18分</span></div>
+<div class="hotel" id="h3" style="top:286px"><div class="img"></div>ホテルC<span class="w">駅から徒歩6分</span></div>
+<div id="h4" class="hotel" style="top:332px"><div class="img"></div>ホテルD<span class="w">駅からバス20分</span></div>
+<div id="closed" class="abs" style="left:38px; top:110px; width:568px; height:344px; background:#0d1323; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:var(--sub); font-size:18px; font-weight:800">
+  <div style="font-size:34px">×</div>タブを閉じた
+</div>
+
+<div class="abs" style="left:622px; top:118px; font-size:14px; font-weight:800; color:var(--web)">AIエージェント</div>
+<div class="abs" style="left:622px; top:140px; font-size:11.5px; color:var(--sub)">例：ブラウザ組み込みのAI</div>
+<div class="abs" style="left:622px; top:170px; font-size:12px; font-weight:700; color:var(--sub)">このページのツール</div>
+<div id="tool" class="abs mono" style="left:622px; top:190px; padding:4px 10px; border-radius:7px; border:1.5px solid var(--web); color:var(--web); font-size:12.5px; font-weight:700">filter_hotels</div>
+<div id="strike" class="abs" style="left:618px; top:202px; width:112px; height:2.5px; background:var(--user)"></div>
+<div id="none" class="abs" style="left:752px; top:194px; font-size:12px; font-weight:800; color:var(--user)">使えなくなった</div>
+<div id="q" class="bubble user" style="left:690px; top:236px; font-size:13.5px">駅から徒歩10分以内に絞って</div>
+<div id="a" class="bubble ai" style="left:622px; top:290px; width:286px; font-size:13.5px">2件に絞り込みました。<br>ホテルAとホテルCです。</div>
+<div class="abs" style="left:622px; top:410px; width:286px; height:34px; border-radius:9px; border:1.5px solid var(--border); background:#0f1628"></div>
+<div id="typing" class="abs" style="left:634px; top:418px; font-size:13.5px">駅から徒歩10分以内に絞って</div>
+
+<div id="code" class="json" style="left:70px; top:222px"><span class="t" style="color:var(--web)">ページのJavaScript</span>document.modelContext.<span class="k">registerTool</span>({
+  name: <span class="s">"filter_hotels"</span>,
+  description: <span class="s">"徒歩の分数でホテルを絞り込む"</span>,
+  inputSchema: { type: <span class="s">"object"</span>,
+    properties: { maxWalkMinutes: { type: <span class="s">"number"</span> } } },
+  execute: ({ maxWalkMinutes }) =&gt; { <span style="color:#64748b">/* 一覧を更新 */</span> }
+});</div>
+
+<div id="p1" class="packet" style="background:var(--web); box-shadow:0 0 18px var(--web)">ツールを登録</div>
+<div id="p2" class="packet mono" style="background:var(--web); box-shadow:0 0 18px var(--web)">filter_hotels({ maxWalkMinutes: 10 })</div>
+<div id="p3" class="packet" style="background:var(--web); box-shadow:0 0 18px var(--web)">結果：2件</div>
+
+<div id="c1" class="cap"><div class="n" style="background:var(--web)">1</div>ページが、自分の機能をツールとして登録する</div>
+<div id="c2" class="cap"><div class="n" style="background:var(--web)">2</div>利用者が頼むと、AIエージェントがページのツールを呼ぶ</div>
+<div id="c3" class="cap"><div class="n" style="background:var(--web)">3</div>ログイン中のまま、利用者の目の前でページの表示が変わる</div>
+<div id="c4" class="cap" style="color:var(--user)"><div class="n" style="background:var(--user)">4</div>ページを閉じると、ツールは使えなくなる</div>
+<div class="note">※URL、ツール名、ホテルは説明用の例</div>
+
+<script src="timeline.js"></script>
+<script>
+const W = "#34d399";
+step(1, 400, 3600, W); show("#c1", 400, 3500);
+show("#code", 700, 3300);
+move("#p1", 2000, 2900, [300, 196], [640, 190]);
+show("#tool", 2900);
+
+step(2, 3800, 6800, W); show("#c2", 3800, 6700);
+type("#typing", 4000, 1000);
+tl("#typing", [[5100, { opacity: 1 }], [5200, { opacity: 0 }]]);
+show("#q", 5200);
+move("#p2", 5600, 6600, [620, 300], [250, 300]);
+
+step(3, 7000, 9800, W); show("#c3", 7000, 9700);
+["#h2", "#h4"].forEach((h) => tl(h, [[7100, { opacity: 1, filter: "none" }], [7500, { opacity: 0.18, filter: "grayscale(1)" }]]));
+show("#fnew", 7200);
+move("#p3", 7900, 8700, [300, 384], [520, 384]);
+show("#a", 8800);
+
+step(4, 10000, null, "#fb923c"); show("#c4", 10000);
+tl("#closed", [[10200, { opacity: 0 }], [10600, { opacity: 1 }]]);
+tl("#strike", [[11000, { opacity: 0, transform: "scaleX(0)", transformOrigin: "left" }], [11400, { opacity: 1, transform: "scaleX(1)", transformOrigin: "left" }]]);
+show("#none", 11500);
+</script>
+</body>
+</html>

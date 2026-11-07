@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="base.css">
+<style>
+  .q { position: absolute; padding: 10px 14px; border-radius: 12px; background: var(--win); border: 1.5px solid var(--border); font-size: 14.5px; line-height: 1.5; font-weight: 700; }
+  .q .no { display: block; font-size: 11.5px; font-weight: 800; color: var(--user); letter-spacing: .05em; }
+  .t { position: absolute; padding: 8px 14px; border-radius: 10px; font-size: 16px; font-weight: 800; color: var(--bg); text-align: center; }
+  .x { position: absolute; padding: 8px 14px; border-radius: 10px; font-size: 13.5px; font-weight: 700; color: var(--sub); border: 1.5px dashed var(--border); text-align: center; }
+  .yn { position: absolute; font-size: 12.5px; font-weight: 800; }
+  .y { color: var(--user); } .n { color: var(--sub); }
+  .sum { position: absolute; left: 32px; width: 896px; padding: 9px 16px; border-radius: 10px; background: #111a30; border: 1.5px solid var(--border); font-size: 14.5px; font-weight: 700; }
+  .sum b { color: var(--user); }
+</style>
+</head>
+<body>
+<div class="head"><div class="badge" style="background:var(--user)">選び方</div><h1>3つの問いに答え、「はい」になった技術をすべて採用する</h1></div>
+
+<svg class="abs" style="left:0; top:0" width="960" height="540" fill="none" stroke-width="2.5">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#94a3b8"/></marker>
+    <marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#fb923c"/></marker>
+  </defs>
+  <!-- Q1 -->
+  <path d="M110 150 L110 196" stroke="#fb923c" marker-end="url(#ao)"/>
+  <path d="M300 150 L300 196" stroke="#475569" marker-end="url(#ah)"/>
+  <!-- Q2 -->
+  <path d="M560 150 L560 196" stroke="#fb923c" marker-end="url(#ao)"/>
+  <path d="M840 150 L840 196" stroke="#475569" marker-end="url(#ah)"/>
+  <!-- MCP -> Q3 -->
+  <path d="M560 236 L560 262" stroke="#60a5fa" marker-end="url(#ah)"/>
+  <!-- Q3 -->
+  <path d="M520 336 L520 370" stroke="#fb923c" marker-end="url(#ao)"/>
+  <path d="M700 336 L700 370" stroke="#475569" marker-end="url(#ah)"/>
+</svg>
+
+<!-- 問い1 -->
+<div class="q" style="left:32px; top:72px; width:380px"><span class="no">問い1</span>利用者が自社のWebサイトを開いている間に、AIに手伝わせたいか</div>
+<div class="yn y" style="left:118px; top:162px">はい</div>
+<div class="yn n" style="left:308px; top:162px">いいえ</div>
+<div class="t" style="left:46px; top:200px; width:140px; background:var(--web)">WebMCP</div>
+<div class="x" style="left:220px; top:200px; width:190px">WebMCPは使わない</div>
+
+<!-- 問い2 -->
+<div class="q" style="left:476px; top:72px; width:452px"><span class="no">問い2</span>AIアプリから、ページを開かずに自社の機能を使わせたいか（利用者がその場にいない処理も含む）</div>
+<div class="yn y" style="left:568px; top:162px">はい</div>
+<div class="yn n" style="left:848px; top:162px">いいえ</div>
+<div class="t" style="left:490px; top:200px; width:140px; background:var(--mcp)">MCP</div>
+<div class="x" style="left:740px; top:200px; width:188px">MCPも MCP Appsも<br>使わない（問い3は不要）</div>
+
+<!-- 問い3 -->
+<div class="q" style="left:476px; top:266px; width:452px"><span class="no">問い3</span>結果を、会話の中で操作できる画面として見せる必要があるか</div>
+<div class="yn y" style="left:528px; top:344px">はい</div>
+<div class="yn n" style="left:708px; top:344px">いいえ</div>
+<div class="t" style="left:440px; top:374px; width:160px; background:var(--apps)">＋ MCP Apps</div>
+<div class="x" style="left:640px; top:374px; width:150px">MCPだけ</div>
+
+<!-- まとめ -->
+<div class="sum" style="top:428px">問い1と問い2が両方「はい」 → <b>MCPとWebMCPを両方使う</b>（役割分担は本文を参照）</div>
+<div class="sum" style="top:472px">問い1と問い2が両方「いいえ」 → <b>3つとも導入しない</b></div>
+<div class="note">※問いの分け方は、公式資料をもとにした筆者の整理</div>
+</body>
+</html>
