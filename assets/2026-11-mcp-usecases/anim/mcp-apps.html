@@ -10,7 +10,7 @@
 </style>
 </head>
 <body>
-<div class="head"><div class="badge" style="background:var(--apps)">MCP Apps</div><h1>ツールに結びつけた画面を、会話の中に表示する</h1></div>
+<div class="head"><div class="badge" style="background:var(--apps)">MCP Apps</div><h1>ツールの結果を、操作できる画面にしてチャットに表示する</h1></div>
 <div class="steps"><div id="d1" class="dot">1</div><div id="d2" class="dot">2</div><div id="d3" class="dot">3</div><div id="d4" class="dot">4</div></div>
 
 <div class="win" style="left:36px; top:76px; width:560px; height:380px">
@@ -77,9 +77,9 @@
 <div id="c0" class="cap"><div class="n" style="background:var(--user)">▶</div>利用者が、AIアプリに作業を頼む</div>
 <div id="c1" class="cap"><div class="n" style="background:var(--apps)">1</div>AIアプリがツールを呼ぶ。ツールの定義は<span class="mono">ui://</span>の画面を指している</div>
 <div id="c2" class="cap"><div class="n" style="background:var(--apps)">2</div>AIアプリが、そのURIのHTMLをMCPサーバーから取得する</div>
-<div id="c3" class="cap"><div class="n" style="background:var(--apps)">3</div>AIアプリが、取得したHTMLを会話の中のiframeに表示し、ツールの結果を渡す</div>
+<div id="c3" class="cap"><div class="n" style="background:var(--apps)">3</div>AIアプリが、取得したHTMLをチャット画面のiframeに表示し、ツールの結果を渡す</div>
 <div id="c4" class="cap"><div class="n" style="background:var(--apps)">4</div>画面の操作から、AIアプリを通してMCPサーバーのツールを呼ぶ</div>
-<div id="c5" class="cap" style="color:var(--apps)"><div class="n" style="background:var(--apps)">✓</div>テキストで頼み直さなくても、会話の中の画面で操作できる</div>
+<div id="c5" class="cap" style="color:var(--apps)"><div class="n" style="background:var(--apps)">✓</div>テキストで頼み直さなくても、チャット画面の中で操作できる</div>
 <div class="note">※名前とURI、数値は説明用の例。主なメッセージだけを表示（ui/initialize、tool-input、jsonrpc、id、リクエストの _meta などは省略）</div>
 
 <script src="timeline.js"></script>
