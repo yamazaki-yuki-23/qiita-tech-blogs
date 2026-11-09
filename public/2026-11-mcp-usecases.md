@@ -5,12 +5,13 @@ tags:
   - WebMCP
   - MCPApps
   - AIエージェント
+  - AI
 private: false
-updated_at: ''
-id: null
+updated_at: '2026-11-09T08:21:41+09:00'
+id: e646041d87869de59b8d
 organization_url_name: null
 slide: false
-ignorePublish: true
+ignorePublish: false
 posting_campaign_uuid: null
 agreed_posting_campaign_term: false
 ---
